@@ -8,13 +8,12 @@
 #include <utility>
 #include <random>
 #include <iostream>
-#include <unordered_map>
 
 namespace itsamonster {
 
 struct ConditionTracker {
     //
-    std::unordered_map<Condition, int> conditionsRounds; // Track conditions using bitmask
+    std::array<int, static_cast<size_t>(Condition::Count)> conditionsRounds{}; // Track conditions using bitmask
 };
 
 struct RoundTracker {
@@ -25,11 +24,11 @@ struct RoundTracker {
 
 class Monster {
 public:
-    Monster(std::string n, int h, int a, std::unordered_map<Stat, std::pair<int, int>> s)
+    Monster(std::string_view n, int h, int a, std::array<std::pair<int, int>, 6> s)
         : m_name(std::move(n)), m_hp(h), m_ac(a), m_stats(std::move(s)) {}
     virtual ~Monster() = default;
 
-    virtual std::string GetName() const { return m_name; }
+    virtual std::string_view GetName() const { return m_name; }
     virtual int GetHP() const { return m_hp; }
     virtual int GetAC() const { return m_ac; }
 
@@ -42,10 +41,10 @@ public:
     virtual void StartTurn(int round, std::mt19937 &rng);
     virtual void EndTurn(std::mt19937 &rng);
 private:
-    std::string m_name;
+    std::string_view m_name;
     int m_hp;
     int m_ac;
-    std::unordered_map<Stat, std::pair<int, int>> m_stats;
+    std::array<std::pair<int, int>, 6> m_stats{};
     ConditionTracker m_conditions;
 protected:
     RoundTracker m_round;

@@ -6,43 +6,45 @@
 namespace itsamonster {
 
 enum class Stat : uint32_t {
-    Strength     = 0x01,
-    Dexterity    = 0x02,
-    Constitution = 0x04,
-    Intelligence = 0x08,
-    Wisdom       = 0x10,
-    Charisma     = 0x20
+    Strength     = 0,
+    Dexterity    ,
+    Constitution ,
+    Intelligence ,
+    Wisdom       ,
+    Charisma     
 };
 
 enum class DamageType : uint32_t {
-    Acid        = 0x0001,
-    Bludgeoning = 0x0002,
-    Cold        = 0x0004,
-    Fire        = 0x0008,
-    Force       = 0x0010,
-    Lightning   = 0x0020,
-    Necrotic    = 0x0040,
-    Piercing    = 0x0080,
-    Poison      = 0x0100,
-    Psychic     = 0x0200,
-    Radiant     = 0x0400,
-    Slashing    = 0x0800,
-    Thunder     = 0x1000
+    Acid        = 0,
+    Bludgeoning ,
+    Cold        ,
+    Fire        ,
+    Force       ,
+    Lightning   ,
+    Necrotic    ,
+    Piercing    ,
+    Poison      ,
+    Psychic     ,
+    Radiant     ,
+    Slashing    ,
+    Thunder     ,
+    Count
 };
 
 enum class Condition : uint32_t {
-    Blinded      = 0x0001,
-    Charmed      = 0x0002,
-    Deafened     = 0x0004,
-    Frightened   = 0x0008,
-    Grappled     = 0x0010,
-    Incapacitated= 0x0020,
-    Invisible    = 0x0040,
-    Paralyzed    = 0x0080,
-    Petrified    = 0x0100,
-    Poisoned     = 0x0200,
-    Prone        = 0x0400,
-    Restrained   = 0x0800
+    Blinded      = 0,
+    Charmed      ,
+    Deafened     ,
+    Frightened   ,
+    Grappled     ,
+    Incapacitated,
+    Invisible    ,
+    Paralyzed    ,
+    Petrified    ,
+    Poisoned     ,
+    Prone        ,
+    Restrained   ,
+    Count
 };
 
 inline std::string_view to_string(Stat stat) {

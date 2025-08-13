@@ -14,12 +14,12 @@ struct Yochlol : public Monster {
     bool isInGasForm = false;
     Yochlol()
         : Monster("Yochlol", 153, 15, {
-            std::make_pair(Stat::Strength, std::make_pair(15, 6)),
-            std::make_pair(Stat::Dexterity, std::make_pair(19, 6)),
-            std::make_pair(Stat::Constitution, std::make_pair(18, 5)),
-            std::make_pair(Stat::Intelligence, std::make_pair(13, 3)),
-            std::make_pair(Stat::Wisdom, std::make_pair(15, 5)),
-            std::make_pair(Stat::Charisma, std::make_pair(17, 5))
+            std::make_pair(15, 6),
+            std::make_pair(19, 6),
+            std::make_pair(18, 5),
+            std::make_pair(13, 3),
+            std::make_pair(15, 5),
+            std::make_pair(17, 5)
         }) {}
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {

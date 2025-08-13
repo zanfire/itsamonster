@@ -19,13 +19,13 @@ struct Action {
 };
 
 struct AttackAction : public Action {
-    AttackAction(std::string n, int a, int d, DamageType dt, int r) : m_name(std::move(n)), m_attackBonus(a), m_damage(d), m_damageType(dt), m_range(r) {}
+    AttackAction(std::string_view n, int a, int d, DamageType dt, int r) : m_name(n), m_attackBonus(a), m_damage(d), m_damageType(dt), m_range(r) {}
     ~AttackAction() override = default;
 
     void Execute(Monster &attacker, Monster &target, std::mt19937 &rng) override;
 
 private:
-    std::string m_name;
+    std::string_view m_name;
     int m_attackBonus;
     int m_damage;
     DamageType m_damageType;

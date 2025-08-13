@@ -26,12 +26,12 @@ struct YoungGoldDragon : public Monster {
 
     YoungGoldDragon()
         : Monster("Young Gold Dragon", 178, 18, {
-            std::make_pair(Stat::Strength, std::make_pair(23, 6)),
-            std::make_pair(Stat::Dexterity, std::make_pair(14, 6)),
-            std::make_pair(Stat::Constitution, std::make_pair(21, 5)),
-            std::make_pair(Stat::Intelligence, std::make_pair(16, 3)),
-            std::make_pair(Stat::Wisdom, std::make_pair(13, 5)),
-            std::make_pair(Stat::Charisma, std::make_pair(20, 5))
+            std::make_pair(23, 6),
+            std::make_pair(14, 6),
+            std::make_pair(21, 5),
+            std::make_pair(16, 3),
+            std::make_pair(13, 5),
+            std::make_pair(20, 5)
         }) {}
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {

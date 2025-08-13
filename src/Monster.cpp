@@ -3,15 +3,12 @@
 using namespace itsamonster;
 
 bool Monster::IsCondition(Condition condition) const {
-    if (m_conditions.conditionsRounds.find(condition) == m_conditions.conditionsRounds.end()) {
-        return false; // Condition not set
-    }
-    return m_conditions.conditionsRounds.at(condition) > 0; 
+    return m_conditions.conditionsRounds[int(condition)] > 0;
 }
 
 bool Monster::SavingThrow(Stat stat, int DC, std::mt19937 &rng) {
     std::uniform_int_distribution<int> roll(1, 20);
-    int result = roll(rng) + m_stats[stat].second;
+    int result = roll(rng) + m_stats[int(stat)].second;
     if (result >= DC) {
         LOG(m_name << " succeeds the saving throw against " << to_string(stat));
         return true;
@@ -22,7 +19,7 @@ bool Monster::SavingThrow(Stat stat, int DC, std::mt19937 &rng) {
 }
 
 void Monster::SetCondition(Condition condition, int deadline) {
-    m_conditions.conditionsRounds[condition] = deadline;
+    m_conditions.conditionsRounds[int(condition)] = deadline;
     LOG(m_name << " is set to " << to_string(condition) << " until round " << deadline << " is round " << m_round.rounds);
 }
 
@@ -38,10 +35,12 @@ void Monster::StartTurn(int round, std::mt19937 &rng)  {
 }
     
 void Monster::EndTurn(std::mt19937 &rng) {
-    for (auto &pair : m_conditions.conditionsRounds) {
-        if (pair.second <= m_round.rounds) {
-            LOG(m_name << " condition " << to_string(pair.first) << " has ended.");
-            pair.second = 0; // Remove expired condition
+    int condition = 0;
+    for (auto &deadline : m_conditions.conditionsRounds) {
+        if (deadline <= m_round.rounds && deadline != 0) {
+            LOG(m_name << " condition " << to_string(static_cast<Condition>(condition)) << " has ended.");
+            deadline = 0; // Remove expired condition
         }
+        ++condition;
     }
 }

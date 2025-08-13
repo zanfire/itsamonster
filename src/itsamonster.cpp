@@ -35,11 +35,6 @@ int main(int argc, char **argv) {
     }
     std::cout << "Seed: " << seed << "\n";
 
-    // If verbose, show a single illustrative fight first
-    if (g_verbose) {
-        //Battle(1, rng); // one verbose fight
-    }
-
     Match<YoungGoldDragon, Yochlol> match;
     match.Go(total_simulations, seed);
 

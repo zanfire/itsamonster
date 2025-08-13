@@ -4,7 +4,7 @@
 #include "Monster.hpp"
 
 #include <array>
-#include <string>
+#include <string_view>
 #include <utility>
 #include <random>
 #include <iostream>
@@ -17,7 +17,7 @@ struct Match {
     Match() = default;
     virtual ~Match() = default;
 
-    std::string GetWinnerName() const {
+    std::string_view GetWinnerName() const {
         if (m_monsterWin1 > m_monsterWin2) {
             MonsterType1 m1;
             return m1.GetName();
@@ -29,11 +29,11 @@ struct Match {
         }
     }
 
-    std::string GetMonster1Name() const {
+    std::string_view GetMonster1Name() const {
         MonsterType1 m1;
         return m1.GetName();
     }
-    std::string GetMonster2Name() const {
+    std::string_view GetMonster2Name() const {
         MonsterType2 m2;
         return m2.GetName();
     }
@@ -42,17 +42,28 @@ struct Match {
 
     void Go(int runs, int seed) {
         auto t1 = std::chrono::steady_clock::now();
-        std::vector<std::pair<MonsterType1, MonsterType2>> matches(runs);
         std::atomic<int> threadCounter{ 0 };
-        std::for_each(std::execution::unseq, matches.begin(), matches.end(), [&](auto&) {
-            std::mt19937 rng(seed + threadCounter++);
-            MonsterType1 m1;
-            MonsterType2 m2;
-            Fight(m1, m2, rng);
-        });
+        const int numBuckets = std::thread::hardware_concurrency();
+        int bucketSize = runs / numBuckets;
+        int remainder = runs % numBuckets;
+
+        std::vector<std::thread> threads;
+        for (int i = 0; i < numBuckets; ++i) {
+            int currentBucketSize = bucketSize + (i < remainder ? 1 : 0);
+            threads.emplace_back([&, i, currentBucketSize]() {
+                std::mt19937 rng(seed + i);
+                int localWin1 = 0, localWin2 = 0;
+                for (int j = 0; j < currentBucketSize; ++j) {
+                    MonsterType1 m1;
+                    MonsterType2 m2;
+                    Fight(m1, m2, rng);
+                }
+            });
+        }
+        for (auto& t : threads) t.join();
         auto t2 = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::milli> elapsed = t2 - t1;
-        std::cout << "Elapsed time: " << elapsed.count() << " milliseconds\n";
+        std::cout << "Elapsed time: " << elapsed.count() << " ms\n";
     }
 
 private:
@@ -71,9 +82,7 @@ private:
             monster1.TakeAction(monster2, rng);
             monster1.EndTurn(rng);
             if (monster2.GetHP() <= 0) break;
-            if (g_verbose) {
-                std::cout << "  " << monster2.GetName() << " acts\n";
-            }
+            LOG("  " << monster2.GetName() << " acts\n");
             monster2.StartTurn(round, rng);
             monster2.TakeAction(monster1, rng);
             monster2.EndTurn(rng);
@@ -96,8 +105,8 @@ private:
         }
     }
 
-    int m_monsterWin1{ 0 };
-    int m_monsterWin2{ 0 };
+    std::atomic<int> m_monsterWin1{ 0 };
+    std::atomic<int> m_monsterWin2{ 0 };
 };
 
 } // namespace itsamonster
