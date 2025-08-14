@@ -24,8 +24,6 @@ struct Yochlol : public Monster {
     bool HasDarkvision() const override { return true; }
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {
-        // Implement action logic for Yochlol
-
         CausticLash causticLashAction;
         for (int i = 0; i <= 1; ++i) {
             causticLashAction.Execute(*this, target, rng);

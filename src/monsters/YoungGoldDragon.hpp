@@ -55,10 +55,6 @@ struct YoungGoldDragon : public Monster {
         } else {
             Rend rendAction;
             for (int i = 0; i <= 2; ++i) {
-                if (IsCondition(Condition::Incapacitated)) {
-                    LOG(GetName() << " is incapacitated and cannot take actions!");
-                    return;
-                }
                 rendAction.Execute(*this, target, rng);
             }
         }

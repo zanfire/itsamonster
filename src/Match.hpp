@@ -56,7 +56,6 @@ struct Match {
             int currentBucketSize = bucketSize + (i < remainder ? 1 : 0);
             threads.emplace_back([&, i, currentBucketSize]() {
                 std::mt19937 rng(seed + i);
-                int localWin1 = 0, localWin2 = 0;
                 for (int j = 0; j < currentBucketSize; ++j) {
                     MonsterType1 m1;
                     MonsterType2 m2;

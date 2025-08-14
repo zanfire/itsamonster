@@ -5,6 +5,11 @@
 using namespace itsamonster;
 
 void AttackAction::Execute(Monster &attacker, Monster &target, std::mt19937 &rng) {
+    if (attacker.IsCondition(Condition::Incapacitated)) {
+        LOG(attacker.GetName() << " is incapacitated and cannot take actions!");
+        return;
+    }
+
     Advantage attackAdvantage = Advantage::Normal;
     if (target.IsCondition(Condition::Blinded)) {
         attackAdvantage = ResolveAdvantage(attackAdvantage, Advantage::Advantage);

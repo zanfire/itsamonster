@@ -21,8 +21,6 @@ struct Larvae : public Monster {
         }) {}
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {
-        // Implement action logic for Yochlol
-
         Bite biteAction;
         biteAction.Execute(*this, target, rng);
     }

@@ -23,8 +23,6 @@ struct AwakenedPlants : public Monster {
         }) {}
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {
-        // Implement action logic for Yochlol
-
         Rake rakeAction;
         rakeAction.Execute(*this, target, rng);
     }
