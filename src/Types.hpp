@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string_view>
+#include <random>
 
 namespace itsamonster {
 
@@ -94,6 +95,41 @@ inline std::string_view to_string(Condition cond) {
         case Condition::Restrained:    return "Restrained";
         default:                       return "Unknown";
     }
+}
+
+enum class Advantage : uint32_t {
+    Normal = 0,
+    Advantage,
+    Disadvantage
+};
+
+inline std::string_view to_string(Advantage adv) {
+    switch (adv) {
+        case Advantage::Normal:    return "Normal";
+        case Advantage::Advantage: return "Advantage";
+        case Advantage::Disadvantage: return "Disadvantage";
+        default:                  return "Unknown";
+    }
+}
+
+inline Advantage ResolveAdvantage(Advantage current, Advantage target) {
+    if (current == Advantage::Normal || target == Advantage::Normal) {
+        return target;
+    }
+    if (target != current) {
+        return Advantage::Normal;
+    }
+    return target;
+}
+
+inline int D20Test(std::mt19937 &rng, Advantage advantage) {
+    std::uniform_int_distribution<int> dist(1, 20);
+    if (advantage == Advantage::Advantage) {
+        return std::max(dist(rng), dist(rng));
+    } else if (advantage == Advantage::Disadvantage) {
+        return std::min(dist(rng), dist(rng));
+    }
+    return dist(rng);
 }
 
 } // namespace itsamonster

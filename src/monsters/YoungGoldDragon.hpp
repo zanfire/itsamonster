@@ -13,6 +13,7 @@ struct BreathWeapon : public Action {
     BreathWeapon() : Action() {}
 
     virtual void Execute(Monster &attacker, Monster &target, std::mt19937 &rng) override {
+        LOG(attacker.GetName() << " uses Breath Weapon!");
         if (target.SavingThrow(Stat::Dexterity, 17, rng)) {
             target.TakeDamage(DamageType::Fire, 55 / 2, rng);
         } else {
@@ -33,6 +34,13 @@ struct YoungGoldDragon : public Monster {
             std::make_pair(13, 5),
             std::make_pair(20, 5)
         }) {}
+
+    bool HasDarkvision() const override { return true; }
+
+    bool IsImmune(DamageType damageType) const override {
+        if (damageType == DamageType::Fire) return true;
+        return Monster::IsImmune(damageType);
+    }
 
     void TakeAction(Monster &target, std::mt19937 &rng) override {
         if (IsCondition(Condition::Incapacitated)) {

@@ -14,7 +14,7 @@ namespace itsamonster {
 
 template<typename MonsterType1, typename MonsterType2>
 struct Match {
-    Match() = default;
+    Match(bool in_darkness) : m_darkness(in_darkness) {}
     virtual ~Match() = default;
 
     std::string_view GetWinnerName() const {
@@ -39,6 +39,10 @@ struct Match {
     }
     int GetMonster1Wins() const { return m_monsterWin1; }
     int GetMonster2Wins() const { return m_monsterWin2; }
+    
+    double GetAverageRounds(int total_simulations) const {
+        return static_cast<double>(m_totalRounds.load()) / total_simulations;
+    }
 
     void Go(int runs, int seed) {
         auto t1 = std::chrono::steady_clock::now();
@@ -56,7 +60,8 @@ struct Match {
                 for (int j = 0; j < currentBucketSize; ++j) {
                     MonsterType1 m1;
                     MonsterType2 m2;
-                    Fight(m1, m2, rng);
+                    int rounds = Fight(m1, m2, rng);
+                    m_totalRounds.fetch_add(rounds, std::memory_order_relaxed);
                 }
             });
         }
@@ -68,9 +73,21 @@ struct Match {
 
 private:
     template<typename MonsterType1, typename MonsterType2>
-    void Fight(MonsterType1 &monster1, MonsterType2 &monster2, std::mt19937 &rng) {
+    int Fight(MonsterType1 &monster1, MonsterType2 &monster2, std::mt19937 &rng) {
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
+
+        if (m_darkness) {
+            LOG("The fight is happening in darkness!");
+            if (!monster1.HasDarkvision()) {
+                LOG("  " << monster1.GetName() << " is blinded by the darkness.");
+                monster1.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+            }
+            if (!monster2.HasDarkvision()) {
+                LOG("  " << monster2.GetName() << " is blinded by the darkness.");
+                monster2.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+            }
+        }
         while (monster1.GetHP() > 0 && monster2.GetHP() > 0) {
             if (g_verbose) {
                 std::cout << "-- Round " << round << " --\n";
@@ -103,10 +120,13 @@ private:
         } else {
             LOG("Winner: " << monster2.GetName() << " after " << round << " rounds");
         }
+        return round;
     }
 
     std::atomic<int> m_monsterWin1{ 0 };
     std::atomic<int> m_monsterWin2{ 0 };
+    std::atomic<int> m_totalRounds{ 0 };
+    bool m_darkness{ false };
 };
 
 } // namespace itsamonster

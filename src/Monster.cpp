@@ -24,6 +24,18 @@ void Monster::SetCondition(Condition condition, int deadline) {
 }
 
 void Monster::TakeDamage(DamageType type, int damage,  std::mt19937 &rng) {
+    if (IsImmune(type)) {
+        LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
+        return;
+    }
+    if (IsResistant(type)) {
+        damage /= 2;
+        LOG(m_name << " is resistant to " << to_string(type) << ", damage halved to " << damage);
+    }
+    if (IsVulnerable(type)) {
+        damage *= 2;
+        LOG(m_name << " is vulnerable to " << to_string(type) << ", damage doubled to " << damage);
+    }
     int before = m_hp;
     m_hp -= damage;
     LOG("    " << m_name << " takes " << damage << " damage (" << before << " -> " << m_hp << ") " << to_string(type) << "\n");

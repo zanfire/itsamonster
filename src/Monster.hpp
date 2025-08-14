@@ -40,6 +40,11 @@ public:
     virtual void TakeReaction(Monster &attacker, int damage, bool ishit, std::mt19937 &rng) {}
     virtual void StartTurn(int round, std::mt19937 &rng);
     virtual void EndTurn(std::mt19937 &rng);
+
+    virtual bool IsImmune(DamageType type) const { return false; }
+    virtual bool IsVulnerable(DamageType type) const { return false; }
+    virtual bool IsResistant(DamageType type) const { return false; }
+    virtual bool HasDarkvision() const { return false; }
 private:
     std::string_view m_name;
     int m_hp;

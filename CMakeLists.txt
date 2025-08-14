@@ -22,7 +22,9 @@ target_sources(itsamonster PRIVATE
     src/Monster.cpp
     src/Monster.hpp
     src/Types.hpp
-    src/YoungGoldDragon.hpp
-    src/Yochlol.hpp
+    src/monsters/YoungGoldDragon.hpp
+    src/monsters/Yochlol.hpp
+    src/monsters/AwakenedPlants.hpp
+    src/monsters/Larvae.hpp
 )
 

@@ -5,13 +5,12 @@
 
 namespace itsamonster {
 
-struct CausticLash : public AttackAction {
-    CausticLash() : AttackAction("Caustic Lash", 8, 25, DamageType::Acid, 5) {}
-    ~CausticLash() override = default;
-};
-
 struct Yochlol : public Monster {
-    bool isInGasForm = false;
+    struct CausticLash : public AttackAction {
+        CausticLash() : AttackAction("Caustic Lash", 8, 25, DamageType::Acid, 5) {}
+        ~CausticLash() override = default;
+    };
+
     Yochlol()
         : Monster("Yochlol", 153, 15, {
             std::make_pair(15, 6),
@@ -22,6 +21,8 @@ struct Yochlol : public Monster {
             std::make_pair(17, 5)
         }) {}
 
+    bool HasDarkvision() const override { return true; }
+
     void TakeAction(Monster &target, std::mt19937 &rng) override {
         // Implement action logic for Yochlol
 
@@ -31,12 +32,11 @@ struct Yochlol : public Monster {
         }
     }
 
-    virtual void TakeDamage(DamageType damageType, int damage, std::mt19937 &rng) {
-        if (damageType == DamageType::Fire) {
-            damage /= 2; // Double damage if fire
-            LOG(GetName() << " takes half damage from fire: " << damage);
-        }
-        Monster::TakeDamage(damageType, damage, rng);
+    bool IsResistant(DamageType damageType) const override {
+        if (damageType == DamageType::Fire) return true;
+        if (damageType == DamageType::Cold) return true;
+        if (damageType == DamageType::Lightning) return true;
+        return Monster::IsResistant(damageType);
     }
 
     void TakeReaction(Monster &attacker, int damage, bool ishit, std::mt19937 &rng) override {
