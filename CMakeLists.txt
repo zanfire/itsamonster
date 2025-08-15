@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 
 project(itsamonster)
 
@@ -7,13 +7,16 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ot /Ob2 /DNDEBUG")
 endif()
 
+if(MSVC)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY \"MultiThreadedDLL$<$<CONFIG:Debug>:Debug>\")
+endif()
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Explicit source list
-set(ITSAMONSTER_SOURCES
-    src/itsamonster.cpp
+# Explicit source list (core library sources excluding main)
+set(ITSAMONSTER_LIB_SOURCES
     src/Action.cpp
     src/Action.hpp
     src/Battlefield.cpp
@@ -31,28 +34,66 @@ set(ITSAMONSTER_SOURCES
     src/monsters/Larvae.hpp
 )
 
-# Create target
-add_executable(itsamonster ${ITSAMONSTER_SOURCES})
-
-target_include_directories(itsamonster PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-# Visual Studio (and other IDEs) – group by physical folders under src
-# This replaces the default "Header Files"/"Source Files" buckets with the folder tree.
-source_group(
-    TREE ${CMAKE_CURRENT_SOURCE_DIR}/src
-    FILES ${ITSAMONSTER_SOURCES}
-)
+add_library(itsamonster_lib ${ITSAMONSTER_LIB_SOURCES})
+target_include_directories(itsamonster_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(MSVC)
-    # Disable RTTI
-    target_compile_options(itsamonster PRIVATE /GR-)
-    # Tell MSVC STL no exceptions. Must appear before including standard headers.
-    target_compile_definitions(itsamonster PRIVATE _HAS_EXCEPTIONS=0)
-    # (Do NOT write try/throw/catch; avoid dynamic_cast/typeid.)
+    target_compile_options(itsamonster_lib PRIVATE /GR-)
+    target_compile_definitions(itsamonster_lib PRIVATE _HAS_EXCEPTIONS=0)
 else()
-    # GCC / Clang / clang-cl (non-MSVC front-end)
-    target_compile_options(itsamonster PRIVATE -fno-rtti -fno-exceptions)
+    target_compile_options(itsamonster_lib PRIVATE -fno-rtti -fno-exceptions)
+endif()
+
+# Main executable with only entry point
+add_executable(itsamonster src/itsamonster.cpp)
+target_link_libraries(itsamonster PRIVATE itsamonster_lib)
+target_include_directories(itsamonster PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${ITSAMONSTER_LIB_SOURCES} src/itsamonster.cpp)
+
+# ---- Testing (GoogleTest via submodule) ----
+option(ITSAMONSTER_ENABLE_TESTS "Build unit tests" ON)
+
+if(ITSAMONSTER_ENABLE_TESTS)
+    # Expect googletest to be present as a git submodule under extern/googletest
+    # Add instructions in README if not found.
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/CMakeLists.txt)
+        # Ensure googletest builds against the shared (dynamic) MSVC runtime (/MD,/MDd)
+        if(MSVC)
+            set(gtest_force_shared_crt ON CACHE BOOL "Force gtest to use shared CRT" FORCE)
+        endif()
+        add_subdirectory(extern/googletest)
+        enable_testing()
+        file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
+        if(TEST_SOURCES)
+            add_executable(itsamonster_tests ${TEST_SOURCES})
+            target_link_libraries(itsamonster_tests PRIVATE itsamonster_lib GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
+            target_include_directories(itsamonster_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+            # Re-enable RTTI (only) for tests (keep exceptions disabled unless you want them)
+            if(MSVC)
+                target_compile_options(itsamonster_tests PRIVATE /GR)
+                target_compile_definitions(itsamonster_tests PRIVATE _HAS_EXCEPTIONS=0)
+            else()
+                target_compile_options(itsamonster_tests PRIVATE -frtti -fno-exceptions)
+            endif()
+            include(GoogleTest)
+            gtest_discover_tests(itsamonster_tests DISCOVERY_MODE PRE_TEST)
+        else()
+            message(WARNING "ITSAMONSTER_ENABLE_TESTS=ON but no test sources found in tests/*.cpp")
+        endif()
+    else()
+        message(WARNING "googletest submodule not found at extern/googletest. Run: git submodule add https://github.com/google/googletest.git extern/googletest")
+    endif()
+endif()
+
+# (Release optimization flags for both library and executable retained)
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    if(MSVC)
+        target_compile_options(itsamonster_lib PRIVATE /O2 /Ot /Ob2)
+        target_compile_options(itsamonster PRIVATE /O2 /Ot /Ob2)
+    else()
+        target_compile_options(itsamonster_lib PRIVATE -O3)
+        target_compile_options(itsamonster PRIVATE -O3)
+    endif()
 endif()
 

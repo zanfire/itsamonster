@@ -1,6 +1,7 @@
 # itsamonster
 
-This is a simple C++ project using CMake for build management.
+Fight simulator for monster in Dungeons and Dragons 5ed.
+Using C++ and CMake for build management.
 
 ## Dependencies
 - **C++ Compiler**: Any standard C++ compiler (e.g., MSVC, GCC, Clang)
@@ -43,5 +44,35 @@ This is a simple C++ project using CMake for build management.
 - `CMakeLists.txt` - CMake build configuration
 - `build/` - Generated build files and binaries
 
----
-Feel free to modify or extend this README as needed for your project!
+## GoogleTest Submodule Setup
+Tests use GoogleTest/GoogleMock provided as a git submodule at `extern/googletest`.
+
+### Cloning (preferred)
+```powershell
+git clone --recurse-submodules <repo-url>
+```
+
+If you already cloned without submodules:
+```powershell
+git submodule update --init --recursive
+```
+
+### Updating googletest later
+```powershell
+cd extern/googletest
+git fetch --tags origin
+git checkout v1.15.2   # choose desired tag
+cd ../../
+git add extern/googletest
+git commit -m "Update googletest to v1.15.2"
+```
+
+### Reconfigure & build tests
+```powershell
+cmake -S . -B build -D ITSAMONSTER_ENABLE_TESTS=ON
+cmake --build build --config Debug --target itsamonster_tests
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+If the submodule is missing while tests are enabled, CMake emits a warning.
+
