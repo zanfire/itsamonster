@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Monster.hpp"
-#include "Action.hpp"
+#include "actions/AttackAction.hpp"
 
 namespace itsamonster {
 
@@ -22,7 +22,7 @@ struct Larvae : public Monster {
 
     void TakeAction(Monster& target) override {
         Bite biteAction;
-        biteAction.Execute(*this, target);
+        biteAction.Perform(*this, target);
     }
 
     bool IsResistant(DamageType damageType) const override {

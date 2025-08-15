@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Monster.hpp"
-#include "Action.hpp"
+#include "actions/AttackAction.hpp"
 
 namespace itsamonster {
 
@@ -26,7 +26,7 @@ struct Yochlol : public Monster {
     void TakeAction(Monster& target) override {
         CausticLash causticLashAction;
         for (int i = 0; i <= 1; ++i) {
-            causticLashAction.Execute(*this, target);
+            causticLashAction.Perform(*this, target);
         }
     }
 

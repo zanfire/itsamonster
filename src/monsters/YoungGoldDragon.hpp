@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Monster.hpp"
-#include "Action.hpp"
+#include "actions/AttackAction.hpp"
 #include "actions/RechargeAction.hpp"
 
 
@@ -14,6 +14,7 @@ struct Rend : public AttackAction {
 struct BreathWeapon : public RechargeAction {
     BreathWeapon() : RechargeAction("Breath Weapon", 5, 30) {}
 
+protected:
     void Execute(Monster& attacker, Monster& target) override {
         if (!IsAvailable()) {
             LOG(attacker.GetName() << " breath weapon not recharged.");
@@ -50,19 +51,15 @@ struct YoungGoldDragon : public Monster {
     }
 
     void TakeAction(Monster& target) override {
-        if (IsCondition(Condition::Incapacitated)) {
-            LOG(GetName() << " is incapacitated and cannot take actions!");
-            return;
-        }
         if (m_breath.IsAvailable()) {
-            m_breath.Execute(*this, target);
+            m_breath.Perform(*this, target);
         }
         else
         {
             // Multiattack (3 rends)
             Rend rendAction;
             for (int i = 0; i < 3; ++i) {
-                rendAction.Execute(*this, target);
+                rendAction.Perform(*this, target);
             }
         }
     }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Monster.hpp"
-#include "Action.hpp"
+#include "actions/AttackAction.hpp"
 
 namespace itsamonster {
 
@@ -24,7 +24,7 @@ struct AwakenedPlants : public Monster {
 
     void TakeAction(Monster& target) override {
         Rake rakeAction;
-        rakeAction.Execute(*this, target);
+        rakeAction.Perform(*this, target);
     }
 
     bool IsResistant(DamageType damageType) const override {

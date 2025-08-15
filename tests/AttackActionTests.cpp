@@ -1,17 +1,12 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
-#include "Action.hpp"
+#include "actions/AttackAction.hpp"
 #include "monsters/Larvae.hpp"
 #include "Dice.hpp"
+#include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;
-
-class MockDice : public IDice {
-public:
-    MOCK_METHOD(int, Roll, (int sides), (override));
-    MOCK_METHOD(int, D20, (Advantage advantage), (override));
-};
 
 struct TestMonster : public Monster {
     TestMonster() : Monster("TestMonster", 50, 10, 30, {
@@ -33,9 +28,9 @@ TEST(AttackActionTest, HitAndMissControlledByDice) {
     EXPECT_CALL(mock, Roll(testing::_)).Times(testing::AnyNumber());
 
     int before = target.GetHP();
-    attack.Execute(attacker, target); // nat 20 hit
+    attack.Perform(attacker, target); // nat 20 hit
     int mid = target.GetHP();
-    attack.Execute(attacker, target); // nat 1 miss
+    attack.Perform(attacker, target); // nat 1 miss
     int after = target.GetHP();
 
     EXPECT_LT(mid, before); // damage applied on first hit

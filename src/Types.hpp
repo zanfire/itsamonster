@@ -46,7 +46,18 @@ enum class Condition : uint32_t {
     Poisoned     ,
     Prone        ,
     Restrained   ,
+    Stunned      ,
+    Unconscious  ,
     Count
+};
+
+enum class Size : uint32_t {
+    Tiny = 0,
+    Small,
+    Medium,
+    Large,
+    Huge,
+    Gargantuan,
 };
 
 inline std::string_view to_string(Stat stat) {
@@ -94,7 +105,21 @@ inline std::string_view to_string(Condition cond) {
         case Condition::Poisoned:      return "Poisoned";
         case Condition::Prone:         return "Prone";
         case Condition::Restrained:    return "Restrained";
+        case Condition::Stunned:       return "Stunned";
+        case Condition::Unconscious:   return "Unconscious";
         default:                       return "Unknown";
+    }
+}
+
+inline std::string_view to_string(Size size) {
+    switch (size) {
+        case Size::Tiny:       return "Tiny";
+        case Size::Small:      return "Small";
+        case Size::Medium:     return "Medium";
+        case Size::Large:      return "Large";
+        case Size::Huge:       return "Huge";
+        case Size::Gargantuan: return "Gargantuan";
+        default:               return "Unknown";
     }
 }
 

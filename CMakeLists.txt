@@ -16,8 +16,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Explicit source list (core library sources excluding main)
 set(ITSAMONSTER_LIB_SOURCES
-    src/Action.cpp
-    src/Action.hpp
     src/Battlefield.cpp
     src/Battlefield.hpp
     src/Logger.cpp
@@ -28,6 +26,10 @@ set(ITSAMONSTER_LIB_SOURCES
     src/Types.hpp
     src/Dice.cpp
     src/Dice.hpp
+    src/actions/Action.cpp
+    src/actions/Action.hpp
+    src/actions/AttackAction.cpp
+    src/actions/AttackAction.hpp
     src/actions/RechargeAction.cpp
     src/actions/RechargeAction.hpp
     src/monsters/YoungGoldDragon.hpp
