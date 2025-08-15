@@ -21,9 +21,16 @@ public:
         return dist(m_rng);
     }
     int D20(Advantage advantage) override {
-        if (advantage == Advantage::Advantage) return std::max(Roll(20), Roll(20));
-        if (advantage == Advantage::Disadvantage) return std::min(Roll(20), Roll(20));
-        return Roll(20);
+        switch (advantage) {
+            case Advantage::Advantage:
+                return std::max(Roll(20), Roll(20));
+            case Advantage::Disadvantage:
+                return std::min(Roll(20), Roll(20));
+            case Advantage::Normal:
+            case Advantage::NormalUnmutable:
+            default:
+                return Roll(20);
+        }
     }
 private:
     std::mt19937 m_rng;

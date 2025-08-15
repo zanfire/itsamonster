@@ -101,26 +101,47 @@ inline std::string_view to_string(Condition cond) {
 enum class Advantage : uint32_t {
     Normal = 0,
     Advantage,
-    Disadvantage
+    Disadvantage,
+    NormalUnmutable // Acts like Normal but cannot be modified by ResolveAdvantage
 };
 
 inline std::string_view to_string(Advantage adv) {
     switch (adv) {
-        case Advantage::Normal:    return "Normal";
-        case Advantage::Advantage: return "Advantage";
-        case Advantage::Disadvantage: return "Disadvantage";
-        default:                  return "Unknown";
+        case Advantage::Normal:         return "Normal";
+        case Advantage::Advantage:      return "Advantage";
+        case Advantage::Disadvantage:   return "Disadvantage";
+        case Advantage::NormalUnmutable:return "NormalUnmutable";
+        default:                        return "Unknown";
     }
 }
 
+// Resolves a new advantage state by combining current with target according to 5e-like rules:
+// - NormalUnmutable is a special "locked" Normal that cannot be changed away from or toward anything else.
+// - Normal combines to become the other state.
+// - Advantage + Disadvantage (in any order) -> Normal.
+// - Same states stack to themselves (idempotent).
 inline Advantage ResolveAdvantage(Advantage current, Advantage target) {
-    if (current == Advantage::Normal || target == Advantage::Normal) {
-        return target;
+    // If current is locked, never change it.
+    if (current == Advantage::NormalUnmutable) {
+        return current; // ignore target entirely
     }
-    if (target != current) {
-        return Advantage::Normal;
+    // If target is locked, override (lock in) regardless of current.
+    if (target == Advantage::NormalUnmutable) {
+        return Advantage::NormalUnmutable;
     }
-    return target;
+
+    if (current == Advantage::Normal) {
+        return target; // adopt the target state (Advantage/Disadvantage/Normal)
+    }
+    if (target == Advantage::Normal) {
+        return current; // keep existing non-normal state
+    }
+    // Now neither is Normal. If they differ, they cancel to Normal.
+    if (current != target) {
+        return Advantage::NormalUnmutable; // Advantage + Disadvantage -> Normal
+    }
+    // Same non-normal state remains.
+    return current;
 }
 
 } // namespace itsamonster
