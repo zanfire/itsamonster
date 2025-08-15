@@ -123,11 +123,4 @@ inline Advantage ResolveAdvantage(Advantage current, Advantage target) {
     return target;
 }
 
-inline int D20Test_Legacy(std::mt19937 &rng, Advantage advantage) {
-    std::uniform_int_distribution<int> dist(1, 20);
-    if (advantage == Advantage::Advantage) return std::max(dist(rng), dist(rng));
-    if (advantage == Advantage::Disadvantage) return std::min(dist(rng), dist(rng));
-    return dist(rng);
-}
-
 } // namespace itsamonster
