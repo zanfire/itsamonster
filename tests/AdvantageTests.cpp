@@ -6,7 +6,7 @@
 
 using namespace itsamonster;
 
-class FixedDice : public IDice {
+class FixedDice : public Dice {
 public:
     int value;
     int RollCountAdv = 0;

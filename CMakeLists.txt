@@ -59,32 +59,9 @@ source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR}/src FILES ${ITSAMONSTER_LIB_SOURCE
 option(ITSAMONSTER_ENABLE_TESTS "Build unit tests" ON)
 
 if(ITSAMONSTER_ENABLE_TESTS)
-    # Expect googletest to be present as a git submodule under extern/googletest
-    # Add instructions in README if not found.
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/extern/googletest/CMakeLists.txt)
-        # Ensure googletest builds against the shared (dynamic) MSVC runtime (/MD,/MDd)
-        if(MSVC)
-            set(gtest_force_shared_crt ON CACHE BOOL "Force gtest to use shared CRT" FORCE)
-        endif()
+    if(EXISTS ${CMAKE_SOURCE_DIR}/extern/googletest/CMakeLists.txt)
         add_subdirectory(extern/googletest)
-        enable_testing()
-        file(GLOB TEST_SOURCES CONFIGURE_DEPENDS tests/*.cpp)
-        if(TEST_SOURCES)
-            add_executable(itsamonster_tests ${TEST_SOURCES})
-            target_link_libraries(itsamonster_tests PRIVATE itsamonster_lib GTest::gtest GTest::gtest_main GTest::gmock GTest::gmock_main)
-            target_include_directories(itsamonster_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-            # Re-enable RTTI (only) for tests (keep exceptions disabled unless you want them)
-            if(MSVC)
-                target_compile_options(itsamonster_tests PRIVATE /GR)
-                target_compile_definitions(itsamonster_tests PRIVATE _HAS_EXCEPTIONS=0)
-            else()
-                target_compile_options(itsamonster_tests PRIVATE -frtti -fno-exceptions)
-            endif()
-            include(GoogleTest)
-            gtest_discover_tests(itsamonster_tests DISCOVERY_MODE PRE_TEST)
-        else()
-            message(WARNING "ITSAMONSTER_ENABLE_TESTS=ON but no test sources found in tests/*.cpp")
-        endif()
+        add_subdirectory(tests)
     else()
         message(WARNING "googletest submodule not found at extern/googletest. Run: git submodule add https://github.com/google/googletest.git extern/googletest")
     endif()
@@ -102,13 +79,5 @@ if(MSVC)
                             $<$<CONFIG:RelWithDebInfo>:/O2>
                             $<$<CONFIG:MinSizeRel>:/O1>
                             $<$<CONFIG:Debug>:/Od>)
-    if(TARGET itsamonster_tests)
-        target_compile_options(itsamonster_tests PRIVATE
-                            $<$<CONFIG:Release>:/O2>
-                            $<$<CONFIG:RelWithDebInfo>:/O2>
-                            $<$<CONFIG:MinSizeRel>:/O1>
-                            $<$<CONFIG:Debug>:/Od>)
-    endif()
-
 endif()
 

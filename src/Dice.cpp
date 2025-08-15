@@ -1,9 +1,9 @@
 #include "Dice.hpp"
 
 namespace itsamonster {
-thread_local IDice* g_threadDice = nullptr;
+thread_local Dice* g_threadDice = nullptr;
 
-void SetDice(IDice* dice) { g_threadDice = dice; }
+void SetDice(Dice* dice) { g_threadDice = dice; }
 
 void InitThreadDice(uint32_t seed) {
     // Own the dice instance per thread.

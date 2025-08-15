@@ -5,7 +5,7 @@
 
 namespace itsamonster {
 
-class MockDice : public IDice {
+class MockDice : public Dice {
 public:
     MOCK_METHOD(int, Roll, (int sides), (override));
     MOCK_METHOD(int, D20, (Advantage advantage), (override));

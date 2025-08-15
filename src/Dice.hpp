@@ -7,13 +7,13 @@
 
 namespace itsamonster {
 
-struct IDice {
-    virtual ~IDice() = default;
+struct Dice {
+    virtual ~Dice() = default;
     virtual int Roll(int sides) = 0;
     virtual int D20(Advantage advantage) = 0;
 };
 
-class RandomDice : public IDice {
+class RandomDice : public Dice {
 public:
     explicit RandomDice(uint32_t seed) : m_rng(seed) {}
     int Roll(int sides) override {
@@ -40,21 +40,21 @@ private:
 
 namespace itsamonster {
 // Thread-local dice management
-extern thread_local IDice* g_threadDice; // non-owning pointer
+extern thread_local Dice* g_threadDice; // non-owning pointer
 
 // Retrieve current thread's dice (must have been initialized)
-inline IDice& GetDice() { return *g_threadDice; }
+inline Dice& GetDice() { return *g_threadDice; }
 
 // Set the current thread dice pointer (non-owning)
-void SetDice(IDice* dice);
+void SetDice(Dice* dice);
 
 // Initialize a thread-local RandomDice with provided seed and set as active.
 void InitThreadDice(uint32_t seed);
 
 // RAII helper for temporarily overriding the thread dice (e.g. in tests)
 struct ScopedDiceOverride {
-    IDice* m_prev;
-    explicit ScopedDiceOverride(IDice* replacement) : m_prev(g_threadDice) { g_threadDice = replacement; }
+    Dice* m_prev;
+    explicit ScopedDiceOverride(Dice* replacement) : m_prev(g_threadDice) { g_threadDice = replacement; }
     ~ScopedDiceOverride() { g_threadDice = m_prev; }
 };
 }
