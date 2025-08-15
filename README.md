@@ -75,4 +75,3 @@ ctest --test-dir build -C Debug --output-on-failure
 ```
 
 If the submodule is missing while tests are enabled, CMake emits a warning.
-

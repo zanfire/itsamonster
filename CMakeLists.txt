@@ -21,6 +21,7 @@ set(ITSAMONSTER_LIB_SOURCES
     src/Action.hpp
     src/Battlefield.cpp
     src/Battlefield.hpp
+    src/Logger.cpp
     src/Match.cpp
     src/Match.hpp
     src/Monster.cpp

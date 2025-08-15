@@ -6,7 +6,6 @@
 #include <random>
 
 using namespace itsamonster;
-bool g_verbose = true;
 
 TEST(LarvaeTest, PiercingResistanceTrue) {
     Larvae larva;

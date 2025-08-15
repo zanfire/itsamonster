@@ -12,8 +12,6 @@
 #include <iomanip>
 
 using namespace itsamonster;
-bool g_verbose = false; // global verbose flag used by Monster methods
-
 
 int main(int argc, char **argv) {
     int total_simulations = 1000;
@@ -22,7 +20,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         std::string arg = argv[i];
         if (arg == "-v" || arg == "--verbose") {
-            g_verbose = true;
+            Logger::Instance().SetVerbose(true);
         } else if ((arg == "-n" || arg == "--iterations") && i + 1 < argc) {
             total_simulations = std::stoi(argv[++i]);
         } else if ((arg == "-s" || arg == "--seed") && i + 1 < argc) {

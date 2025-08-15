@@ -94,10 +94,10 @@ private:
             }
         }
         while (monster1.GetHP() > 0 && monster2.GetHP() > 0) {
-            if (g_verbose) {
+            if (Logger::Instance().IsVerbose()) {
                 std::cout << "-- Round " << round << " --\n";
                 std::cout << "  Status: " << monster1.GetName() << " HP=" << monster1.GetHP() << " | "
-                        << monster2.GetName() << " HP=" << monster2.GetHP() << "\n";
+                          << monster2.GetName() << " HP=" << monster2.GetHP() << "\n";
                 std::cout << "  " << monster1.GetName() << " acts\n";
             }
             monster1.StartTurn(round, rng);
