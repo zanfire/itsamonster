@@ -13,7 +13,7 @@ struct AwakenedPlants : public Monster {
     };
 
     AwakenedPlants()
-        : Monster("Awakened Plants", 10, 9, {
+    : Monster("Awakened Plants", 10, 9, 20, {
             std::make_pair(3, -4),
             std::make_pair(8, -1),
             std::make_pair(11, 0),
@@ -22,7 +22,7 @@ struct AwakenedPlants : public Monster {
             std::make_pair(6, -2)
         }) {}
 
-    void TakeAction(Monster &target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target, std::mt19937 &rng) override {
         Rake rakeAction;
         rakeAction.Execute(*this, target, rng);
     }

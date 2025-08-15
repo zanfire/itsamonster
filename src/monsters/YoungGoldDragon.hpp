@@ -2,6 +2,8 @@
 
 #include "Monster.hpp"
 #include "Action.hpp"
+#include "actions/RechargeAction.hpp"
+
 
 namespace itsamonster {
 struct Rend : public AttackAction {
@@ -9,24 +11,29 @@ struct Rend : public AttackAction {
     ~Rend() override = default;
 };
 
-struct BreathWeapon : public Action {
-    BreathWeapon() : Action() {}
+struct BreathWeapon : public RechargeAction {
+    BreathWeapon() : RechargeAction("Breath Weapon", 5, 30) {}
 
-    virtual void Execute(Monster &attacker, Monster &target, std::mt19937 &rng) override {
-        LOG(attacker.GetName() << " uses Breath Weapon!");
+    void Execute(Monster& attacker, Monster& target, std::mt19937 &rng) override {
+        if (!IsAvailable()) {
+            LOG(attacker.GetName() << " breath weapon not recharged.");
+            return;
+        }
+        LOG(attacker.GetName() << " uses Breath Weapon! (Recharge 5-6)");
         if (target.SavingThrow(Stat::Dexterity, 17, rng)) {
             target.TakeDamage(DamageType::Fire, 55 / 2, rng);
         } else {
             target.TakeDamage(DamageType::Fire, 55, rng);
         }
+        Consume();
     }
 };
 
 struct YoungGoldDragon : public Monster {
-    bool m_hasUsedBreathWeapon = true;
+    BreathWeapon m_breath;
 
     YoungGoldDragon()
-        : Monster("Young Gold Dragon", 178, 18, {
+    : Monster("Young Gold Dragon", 178, 18, 80, {
             std::make_pair(23, 6),
             std::make_pair(14, 6),
             std::make_pair(21, 5),
@@ -42,19 +49,19 @@ struct YoungGoldDragon : public Monster {
         return Monster::IsImmune(damageType);
     }
 
-    void TakeAction(Monster &target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target, std::mt19937 &rng) override {
         if (IsCondition(Condition::Incapacitated)) {
             LOG(GetName() << " is incapacitated and cannot take actions!");
             return;
         }
-        if (m_hasUsedBreathWeapon) {
-            BreathWeapon breathWeaponAction;
-            breathWeaponAction.Execute(*this, target, rng);
-            m_hasUsedBreathWeapon = false;
-            return; // Skip other actions if breath weapon is used
-        } else {
+        if (m_breath.IsAvailable()) {
+            m_breath.Execute(*this, target, rng);
+        }
+        else
+        {
+            // Multiattack (3 rends)
             Rend rendAction;
-            for (int i = 0; i <= 2; ++i) {
+            for (int i = 0; i < 3; ++i) {
                 rendAction.Execute(*this, target, rng);
             }
         }
@@ -62,13 +69,7 @@ struct YoungGoldDragon : public Monster {
 
     void StartTurn(int round, std::mt19937 &rng) override {
         Monster::StartTurn(round,rng);
-        if (!m_hasUsedBreathWeapon) {
-            std::uniform_int_distribution<int> roll(1, 6);
-            if (roll(rng) >= 5) {
-                m_hasUsedBreathWeapon = true;
-                LOG(GetName() << " regains use of Breath Weapon!");
-            }
-        }
+        m_breath.TryRecharge(rng);
     }
 };
 

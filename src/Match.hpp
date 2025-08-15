@@ -2,6 +2,7 @@
 
 #include "Logger.hpp"
 #include "Monster.hpp"
+#include "Battlefield.hpp"
 
 #include <array>
 #include <string_view>
@@ -39,7 +40,7 @@ struct Match {
     }
     int GetMonster1Wins() const { return m_monsterWin1; }
     int GetMonster2Wins() const { return m_monsterWin2; }
-    
+
     double GetAverageRounds(int total_simulations) const {
         return static_cast<double>(m_totalRounds.load()) / total_simulations;
     }
@@ -76,6 +77,11 @@ private:
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
 
+        Battlefield field(200, 200); // 200ft square battlefield
+        // Initial placement: 30ft apart horizontally
+        monster1.SetPosition({50, 100});
+        monster2.SetPosition({80, 100});
+
         if (m_darkness) {
             LOG("The fight is happening in darkness!");
             if (!monster1.HasDarkvision()) {
@@ -95,17 +101,22 @@ private:
                 std::cout << "  " << monster1.GetName() << " acts\n";
             }
             monster1.StartTurn(round, rng);
+            // Move towards if out of melee range (simplistic AI placeholder)
+            double rem1 = monster1.GetRemainingMovement();
+            monster1.MoveTowards(monster2, rem1);
             monster1.TakeAction(monster2, rng);
             monster1.EndTurn(rng);
             if (monster2.GetHP() <= 0) break;
             LOG("  " << monster2.GetName() << " acts\n");
             monster2.StartTurn(round, rng);
+            double rem2 = monster2.GetRemainingMovement();
+            monster2.MoveTowards(monster1, rem2);
             monster2.TakeAction(monster1, rng);
             monster2.EndTurn(rng);
 
             if (monster1.GetHP() <= 0 || monster2.GetHP() <= 0) break;
             ++round;
-            
+
             LOG("--- Round ended ---");
             LOG("");
         }

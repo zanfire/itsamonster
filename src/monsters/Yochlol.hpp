@@ -12,7 +12,7 @@ struct Yochlol : public Monster {
     };
 
     Yochlol()
-        : Monster("Yochlol", 153, 15, {
+    : Monster("Yochlol", 153, 15, 30, {
             std::make_pair(15, 6),
             std::make_pair(19, 6),
             std::make_pair(18, 5),
@@ -23,7 +23,7 @@ struct Yochlol : public Monster {
 
     bool HasDarkvision() const override { return true; }
 
-    void TakeAction(Monster &target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target, std::mt19937 &rng) override {
         CausticLash causticLashAction;
         for (int i = 0; i <= 1; ++i) {
             causticLashAction.Execute(*this, target, rng);
@@ -37,7 +37,7 @@ struct Yochlol : public Monster {
         return Monster::IsResistant(damageType);
     }
 
-    void TakeReaction(Monster &attacker, int damage, bool ishit, std::mt19937 &rng) override {
+    void TakeReaction(Monster& attacker, int damage, bool ishit, std::mt19937 &rng) override {
         if (m_round.reaction) {
             LOG(GetName() << " has already taken a reaction this turn!");
             return;

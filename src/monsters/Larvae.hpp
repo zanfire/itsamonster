@@ -11,7 +11,7 @@ struct Larvae : public Monster {
         ~Bite() override = default;
     };
     Larvae()
-        : Monster("Larvae", 9, 9, {
+    : Monster("Larvae", 9, 9, 10, {
             std::make_pair(9, -1),
             std::make_pair(9, -1),
             std::make_pair(10, 0),
@@ -20,7 +20,7 @@ struct Larvae : public Monster {
             std::make_pair(2, -4)
         }) {}
 
-    void TakeAction(Monster &target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target, std::mt19937 &rng) override {
         Bite biteAction;
         biteAction.Execute(*this, target, rng);
     }
