@@ -5,11 +5,6 @@ cmake_policy(SET CMP0091 NEW)
 project(itsamonster)
 enable_language(CXX)
 
-# Optimize for speed over size in Release mode
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /O2 /Ot /Ob2 /DNDEBUG")
-endif()
-
 if(MSVC)
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
@@ -17,6 +12,7 @@ endif()
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Explicit source list (core library sources excluding main)
 set(ITSAMONSTER_LIB_SOURCES
@@ -92,14 +88,25 @@ if(ITSAMONSTER_ENABLE_TESTS)
     endif()
 endif()
 
-# (Release optimization flags for both library and executable retained)
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    if(MSVC)
-        target_compile_options(itsamonster_lib PRIVATE /O2 /Ot /Ob2)
-        target_compile_options(itsamonster PRIVATE /O2 /Ot /Ob2)
-    else()
-        target_compile_options(itsamonster_lib PRIVATE -O3)
-        target_compile_options(itsamonster PRIVATE -O3)
+# Configuration-specific tweaks
+if(MSVC)
+    target_compile_options(itsamonster_lib PRIVATE
+                            $<$<CONFIG:Release>:/O2>
+                            $<$<CONFIG:RelWithDebInfo>:/O2>
+                            $<$<CONFIG:MinSizeRel>:/O1>
+                            $<$<CONFIG:Debug>:/Od>)
+    target_compile_options(itsamonster PRIVATE
+                            $<$<CONFIG:Release>:/O2>
+                            $<$<CONFIG:RelWithDebInfo>:/O2>
+                            $<$<CONFIG:MinSizeRel>:/O1>
+                            $<$<CONFIG:Debug>:/Od>)
+    if(TARGET itsamonster_tests)
+        target_compile_options(itsamonster_tests PRIVATE
+                            $<$<CONFIG:Release>:/O2>
+                            $<$<CONFIG:RelWithDebInfo>:/O2>
+                            $<$<CONFIG:MinSizeRel>:/O1>
+                            $<$<CONFIG:Debug>:/Od>)
     endif()
+
 endif()
 
