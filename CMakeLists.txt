@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
+cmake_policy(SET CMP0091 NEW)
+
 project(itsamonster)
+enable_language(CXX)
 
 # Optimize for speed over size in Release mode
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -8,7 +11,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 if(MSVC)
-    set(CMAKE_MSVC_RUNTIME_LIBRARY \"MultiThreadedDLL$<$<CONFIG:Debug>:Debug>\")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 endif()
 
 set(CMAKE_CXX_STANDARD 20)
