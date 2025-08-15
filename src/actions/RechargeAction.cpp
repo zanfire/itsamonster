@@ -4,10 +4,9 @@
 
 using namespace itsamonster;
 
-void RechargeAction::TryRecharge(std::mt19937& rng) {
+void RechargeAction::TryRecharge() {
     if (m_available) return;
-    std::uniform_int_distribution<int> d6(1, 6);
-    int roll = d6(rng);
+    int roll = GetDice().Roll(6);
     if (roll >= m_rechargeMin) {
         m_available = true;
         LOG(m_name << " recharges on a " << roll << " (needed " << m_rechargeMin << "+)");

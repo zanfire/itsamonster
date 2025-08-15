@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <random>
+#include "Dice.hpp"
 #include <iostream>
 
 namespace itsamonster {
@@ -15,7 +16,7 @@ struct Action {
     Action() = default;
     virtual ~Action() = default;
 
-    virtual void Execute(Monster& attacker, Monster& target, std::mt19937 &rng) = 0;
+    virtual void Execute(Monster& attacker, Monster& target) = 0;
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const = 0;
 };
 
@@ -23,7 +24,7 @@ struct AttackAction : public Action {
     AttackAction(std::string_view name, int attackBonus, int damage, DamageType dt, int range) : m_name(name), m_attackBonus(attackBonus), m_damage(damage), m_damageType(dt), m_range(range) {}
     ~AttackAction() override = default;
 
-    void Execute(Monster& attacker, Monster& target, std::mt19937 &rng) override;
+    void Execute(Monster& attacker, Monster& target) override;
 
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const override;
     virtual Advantage HasAdvantage(const Monster& attacker, const Monster& target) const;

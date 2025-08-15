@@ -30,6 +30,8 @@ set(ITSAMONSTER_LIB_SOURCES
     src/Monster.cpp
     src/Monster.hpp
     src/Types.hpp
+    src/Dice.cpp
+    src/Dice.hpp
     src/actions/RechargeAction.cpp
     src/actions/RechargeAction.hpp
     src/monsters/YoungGoldDragon.hpp

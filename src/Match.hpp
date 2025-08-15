@@ -8,6 +8,7 @@
 #include <string_view>
 #include <utility>
 #include <random>
+#include "Dice.hpp"
 #include <iostream>
 #include <execution>
 
@@ -56,11 +57,11 @@ struct Match {
         for (int i = 0; i < numBuckets; ++i) {
             int currentBucketSize = bucketSize + (i < remainder ? 1 : 0);
             threads.emplace_back([&, i, currentBucketSize]() {
-                std::mt19937 rng(seed + i);
+                InitThreadDice(seed + i);
                 for (int j = 0; j < currentBucketSize; ++j) {
                     MonsterType1 m1;
                     MonsterType2 m2;
-                    int rounds = Fight(m1, m2, rng);
+                    int rounds = Fight(m1, m2);
                     m_totalRounds.fetch_add(rounds, std::memory_order_relaxed);
                 }
             });
@@ -73,7 +74,7 @@ struct Match {
 
 private:
     template<typename MonsterType1, typename MonsterType2>
-    int Fight(MonsterType1 &monster1, MonsterType2 &monster2, std::mt19937 &rng) {
+    int Fight(MonsterType1 &monster1, MonsterType2 &monster2) {
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
 
@@ -100,19 +101,19 @@ private:
                           << monster2.GetName() << " HP=" << monster2.GetHP() << "\n";
                 std::cout << "  " << monster1.GetName() << " acts\n";
             }
-            monster1.StartTurn(round, rng);
+            monster1.StartTurn(round);
             // Move towards if out of melee range (simplistic AI placeholder)
             double rem1 = monster1.GetRemainingMovement();
             monster1.MoveTowards(monster2, rem1);
-            monster1.TakeAction(monster2, rng);
-            monster1.EndTurn(rng);
+            monster1.TakeAction(monster2);
+            monster1.EndTurn();
             if (monster2.GetHP() <= 0) break;
             LOG("  " << monster2.GetName() << " acts\n");
-            monster2.StartTurn(round, rng);
+            monster2.StartTurn(round);
             double rem2 = monster2.GetRemainingMovement();
             monster2.MoveTowards(monster1, rem2);
-            monster2.TakeAction(monster1, rng);
-            monster2.EndTurn(rng);
+            monster2.TakeAction(monster1);
+            monster2.EndTurn();
 
             if (monster1.GetHP() <= 0 || monster2.GetHP() <= 0) break;
             ++round;

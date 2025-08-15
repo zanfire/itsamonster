@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <random>
+#include "Dice.hpp"
 #include <ctime>
 #include <iomanip>
 

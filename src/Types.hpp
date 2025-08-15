@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string_view>
 #include <random>
+#include <algorithm>
 
 namespace itsamonster {
 
@@ -12,7 +13,7 @@ enum class Stat : uint32_t {
     Constitution ,
     Intelligence ,
     Wisdom       ,
-    Charisma     
+    Charisma
 };
 
 enum class DamageType : uint32_t {
@@ -122,13 +123,10 @@ inline Advantage ResolveAdvantage(Advantage current, Advantage target) {
     return target;
 }
 
-inline int D20Test(std::mt19937 &rng, Advantage advantage) {
+inline int D20Test_Legacy(std::mt19937 &rng, Advantage advantage) {
     std::uniform_int_distribution<int> dist(1, 20);
-    if (advantage == Advantage::Advantage) {
-        return std::max(dist(rng), dist(rng));
-    } else if (advantage == Advantage::Disadvantage) {
-        return std::min(dist(rng), dist(rng));
-    }
+    if (advantage == Advantage::Advantage) return std::max(dist(rng), dist(rng));
+    if (advantage == Advantage::Disadvantage) return std::min(dist(rng), dist(rng));
     return dist(rng);
 }
 

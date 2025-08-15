@@ -4,7 +4,7 @@
 
 using namespace itsamonster;
 
-void AttackAction::Execute(Monster& attacker, Monster& target, std::mt19937 &rng) {
+void AttackAction::Execute(Monster& attacker, Monster& target) {
     if (attacker.IsCondition(Condition::Incapacitated)) {
         LOG(attacker.GetName() << " is incapacitated and cannot take actions!");
         return;
@@ -22,7 +22,7 @@ void AttackAction::Execute(Monster& attacker, Monster& target, std::mt19937 &rng
         attackAdvantage = ResolveAdvantage(attackAdvantage, Advantage::Disadvantage);
     }
 
-    int d20 = D20Test(rng, attackAdvantage);
+    int d20 = GetDice().D20(attackAdvantage);
     int attackResult = d20 + m_attackBonus;
     bool nat20 = (d20 == 20);
     bool nat1 = (d20 == 1);
@@ -33,8 +33,8 @@ void AttackAction::Execute(Monster& attacker, Monster& target, std::mt19937 &rng
         int damage = m_damage;
         // no crits damage for monster
         //if (nat20) damage *= 2; // simple crit: double base damage (dice not modeled yet)
-        target.TakeReaction(attacker, damage, true, rng);
-        target.TakeDamage(m_damageType, damage, rng);
+        target.TakeReaction(attacker, damage, true);
+        target.TakeDamage(m_damageType, damage);
     }
 }
 

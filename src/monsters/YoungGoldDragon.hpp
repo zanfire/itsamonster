@@ -14,16 +14,16 @@ struct Rend : public AttackAction {
 struct BreathWeapon : public RechargeAction {
     BreathWeapon() : RechargeAction("Breath Weapon", 5, 30) {}
 
-    void Execute(Monster& attacker, Monster& target, std::mt19937 &rng) override {
+    void Execute(Monster& attacker, Monster& target) override {
         if (!IsAvailable()) {
             LOG(attacker.GetName() << " breath weapon not recharged.");
             return;
         }
         LOG(attacker.GetName() << " uses Breath Weapon! (Recharge 5-6)");
-        if (target.SavingThrow(Stat::Dexterity, 17, rng)) {
-            target.TakeDamage(DamageType::Fire, 55 / 2, rng);
+        if (target.SavingThrow(Stat::Dexterity, 17)) {
+            target.TakeDamage(DamageType::Fire, 55 / 2);
         } else {
-            target.TakeDamage(DamageType::Fire, 55, rng);
+            target.TakeDamage(DamageType::Fire, 55);
         }
         Consume();
     }
@@ -49,27 +49,27 @@ struct YoungGoldDragon : public Monster {
         return Monster::IsImmune(damageType);
     }
 
-    void TakeAction(Monster& target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target) override {
         if (IsCondition(Condition::Incapacitated)) {
             LOG(GetName() << " is incapacitated and cannot take actions!");
             return;
         }
         if (m_breath.IsAvailable()) {
-            m_breath.Execute(*this, target, rng);
+            m_breath.Execute(*this, target);
         }
         else
         {
             // Multiattack (3 rends)
             Rend rendAction;
             for (int i = 0; i < 3; ++i) {
-                rendAction.Execute(*this, target, rng);
+                rendAction.Execute(*this, target);
             }
         }
     }
 
-    void StartTurn(int round, std::mt19937 &rng) override {
-        Monster::StartTurn(round,rng);
-        m_breath.TryRecharge(rng);
+    void StartTurn(int round) override {
+        Monster::StartTurn(round);
+        m_breath.TryRecharge();
     }
 };
 

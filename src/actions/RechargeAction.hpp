@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 #include <random>
+#include "Dice.hpp"
 #include <iostream>
 
 namespace itsamonster {
@@ -17,7 +18,7 @@ struct RechargeAction : public Action {
     ~RechargeAction() override = default;
 
     bool IsAvailable() const { return m_available; }
-    void TryRecharge(std::mt19937& rng);
+    void TryRecharge();
     void Consume() { m_available = false; }
     bool IsInRange(const Monster& attacker, const Monster& target) const override;
 protected:

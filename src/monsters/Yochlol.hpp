@@ -23,10 +23,10 @@ struct Yochlol : public Monster {
 
     bool HasDarkvision() const override { return true; }
 
-    void TakeAction(Monster& target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target) override {
         CausticLash causticLashAction;
         for (int i = 0; i <= 1; ++i) {
-            causticLashAction.Execute(*this, target, rng);
+            causticLashAction.Execute(*this, target);
         }
     }
 
@@ -37,7 +37,7 @@ struct Yochlol : public Monster {
         return Monster::IsResistant(damageType);
     }
 
-    void TakeReaction(Monster& attacker, int damage, bool ishit, std::mt19937 &rng) override {
+    void TakeReaction(Monster& attacker, int damage, bool ishit) override {
         if (m_round.reaction) {
             LOG(GetName() << " has already taken a reaction this turn!");
             return;
@@ -45,7 +45,7 @@ struct Yochlol : public Monster {
         if (ishit) {
             m_round.reaction = true;
             LOG(GetName() << " takes a reaction to " << attacker.GetName() << "'s attack!");
-            if (!attacker.SavingThrow(Stat::Constitution, 15, rng)) {
+            if (!attacker.SavingThrow(Stat::Constitution, 15)) {
                 attacker.SetCondition(Condition::Incapacitated, m_round.rounds + 2);
             }
         }

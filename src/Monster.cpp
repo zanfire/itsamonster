@@ -7,9 +7,8 @@ bool Monster::IsCondition(Condition condition) const {
     return m_conditions[int(condition)] > 0;
 }
 
-bool Monster::SavingThrow(Stat stat, int DC, std::mt19937 &rng) {
-    std::uniform_int_distribution<int> roll(1, 20);
-    int result = roll(rng) + m_stats[int(stat)].second;
+bool Monster::SavingThrow(Stat stat, int DC) {
+    int result = GetDice().Roll(20) + m_stats[int(stat)].second;
     if (result >= DC) {
         LOG(m_name << " succeeds the saving throw against " << to_string(stat));
         return true;
@@ -24,7 +23,7 @@ void Monster::SetCondition(Condition condition, int deadline) {
     LOG(m_name << " is set to " << to_string(condition) << " until round " << deadline << " is round " << m_round.rounds);
 }
 
-void Monster::TakeDamage(DamageType type, int damage,  std::mt19937 &rng) {
+void Monster::TakeDamage(DamageType type, int damage) {
     if (IsImmune(type)) {
         LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
         return;
@@ -42,13 +41,13 @@ void Monster::TakeDamage(DamageType type, int damage,  std::mt19937 &rng) {
     LOG("    " << m_name << " takes " << damage << " damage (" << before << " -> " << m_hp << ") " << to_string(type) << "\n");
 }
 
-void Monster::StartTurn(int round, std::mt19937 &rng)  {
+void Monster::StartTurn(int round)  {
     m_round = {};
     m_round.rounds = round;
     ResetMovementBudget();
 }
 
-void Monster::EndTurn(std::mt19937 &rng) {
+void Monster::EndTurn() {
     int condition = 0;
     for (auto &deadline : m_conditions) {
         if (deadline <= m_round.rounds && deadline != 0) {

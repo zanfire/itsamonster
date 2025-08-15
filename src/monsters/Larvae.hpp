@@ -20,9 +20,9 @@ struct Larvae : public Monster {
             std::make_pair(2, -4)
         }) {}
 
-    void TakeAction(Monster& target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target) override {
         Bite biteAction;
-        biteAction.Execute(*this, target, rng);
+        biteAction.Execute(*this, target);
     }
 
     bool IsResistant(DamageType damageType) const override {

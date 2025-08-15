@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <random>
+#include "Dice.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -43,12 +44,12 @@ public:
 
     virtual bool IsCondition(Condition condition) const;
     virtual void SetCondition(Condition condition, int duration);
-    virtual bool SavingThrow(Stat stat, int DC, std::mt19937 &rng);
-    virtual void TakeAction(Monster& target, std::mt19937 &rng) = 0;
-    virtual void TakeDamage(DamageType type, int damage,  std::mt19937 &rng);
-    virtual void TakeReaction(Monster& attacker, int damage, bool ishit, std::mt19937 &rng) {}
-    virtual void StartTurn(int round, std::mt19937 &rng);
-    virtual void EndTurn(std::mt19937 &rng);
+    virtual bool SavingThrow(Stat stat, int DC);
+    virtual void TakeAction(Monster& target) = 0;
+    virtual void TakeDamage(DamageType type, int damage);
+    virtual void TakeReaction(Monster& attacker, int damage, bool ishit) {}
+    virtual void StartTurn(int round);
+    virtual void EndTurn();
 
     virtual bool IsImmune(DamageType type) const { return false; }
     virtual bool IsVulnerable(DamageType type) const { return false; }

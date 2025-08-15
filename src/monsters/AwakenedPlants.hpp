@@ -22,9 +22,9 @@ struct AwakenedPlants : public Monster {
             std::make_pair(6, -2)
         }) {}
 
-    void TakeAction(Monster& target, std::mt19937 &rng) override {
+    void TakeAction(Monster& target) override {
         Rake rakeAction;
-        rakeAction.Execute(*this, target, rng);
+        rakeAction.Execute(*this, target);
     }
 
     bool IsResistant(DamageType damageType) const override {
