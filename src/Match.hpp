@@ -2,7 +2,7 @@
 
 #include "Logger.hpp"
 #include "monsters/Monster.hpp"
-#include "Battlefield.hpp"
+#include "core/Battlefield.hpp"
 #include "core/Dice.hpp"
 
 #include <array>

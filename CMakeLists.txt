@@ -26,10 +26,12 @@ set(ITSAMONSTER_LIB_SOURCES
     src/actions/AttackAction.hpp
     src/actions/RechargeAction.cpp
     src/actions/RechargeAction.hpp
-    src/Battlefield.cpp
-    src/Battlefield.hpp
+    src/core/Battlefield.cpp
+    src/core/Battlefield.hpp
     src/core/Dice.cpp
     src/core/Dice.hpp
+    src/core/AI.cpp
+    src/core/AI.hpp
     src/core/CombatSystem.cpp
     src/core/CombatSystem.hpp
     src/reactions/Reaction.cpp

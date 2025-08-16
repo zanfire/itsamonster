@@ -9,7 +9,7 @@
 
 #include "Types.hpp"
 #include "monsters/Monster.hpp"
-#include "Battlefield.hpp"
+#include "core/Battlefield.hpp"
 
 namespace itsamonster {
 
@@ -73,6 +73,8 @@ public:
     CombatSystem(CombatSystem&&) = delete;
     CombatSystem& operator=(CombatSystem&&) = delete;
 
+    Battlefield& GetBattlefield() { return m_battlefield; }
+
     void AddListener(TurnEventListener* listener);
     void RemoveListener(TurnEventListener* listener);
     void NotifyPositionChanged(Monster& monster, const Position& oldPos, const Position& newPos);
@@ -96,6 +98,7 @@ private:
     const TurnTracker* GetTurnTracker(const Monster& monster) const;
 
 private:
+    Battlefield m_battlefield{100, 100}; // Default battlefield size, can be adjusted
     std::vector<TurnEventListener*> m_listeners;
     std::array<TurnTracker, 2> m_turnTrackers;
     int m_round{ 0 };

@@ -1,7 +1,15 @@
 #include "Monster.hpp"
 #include <algorithm>
+#include "core/CombatSystem.hpp"
 
 using namespace itsamonster;
+
+Monster::~Monster() = default;
+void Monster::SetPosition(Position p) {
+    Position old = m_position;
+    m_position = p;
+    CombatSystem::Instance().NotifyPositionChanged(*this, old, m_position);
+}
 
 bool Monster::IsCondition(Condition condition) const {
     return m_conditions[int(condition)] > 0;
@@ -55,18 +63,4 @@ void Monster::EndTurn() {
         }
         ++condition;
     }
-}
-
-void Monster::MoveTowards(const Monster& target, double &remainingSpeed) {
-    if (remainingSpeed <= 0) return;
-    Position tp = target.GetPosition();
-    double dist = m_position.DistanceTo(tp);
-    if (dist <= 5.0) return; // already adjacent (within 5ft)
-    double move = std::min(dist - 5.0, remainingSpeed); // stop at 5ft distance
-    if (move <= 0) return;
-    // simple linear interpolation
-    double ratio = move / dist;
-    m_position.x = static_cast<int>(std::round(m_position.x + (tp.x - m_position.x) * ratio));
-    m_position.y = static_cast<int>(std::round(m_position.y + (tp.y - m_position.y) * ratio));
-    remainingSpeed -= move;
 }

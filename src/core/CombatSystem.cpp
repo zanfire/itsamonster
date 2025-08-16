@@ -1,6 +1,7 @@
 #include "CombatSystem.hpp"
 
 #include "reactions/Reaction.hpp"
+#include "AI.hpp"
 
 #include <algorithm>
 
@@ -49,9 +50,13 @@ void CombatSystem::Round(std::array<Monster*, 2> initiativeOrder) {
         // Determine opponent (2-creature initiative assumed here)
     Monster* opponent = (monster == initiativeOrder[0]) ? initiativeOrder[1] : initiativeOrder[0];
 
-        // Perform actions (TakeAction requires a target)
+        // Perform actions (AI strategy if available; otherwise monster-defined action)
         if (opponent) {
-            monster->TakeAction(*opponent);
+            if (auto* ai = monster->GetAI()) {
+                ai->TakeTurn(*monster, *opponent);
+            } else {
+                monster->TakeAction(*opponent);
+            }
         }
         NotifyTurnEvent(*monster, TurnEvent::AfterAction, ctx);
 
