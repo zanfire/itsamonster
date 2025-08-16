@@ -2,8 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "actions/AttackAction.hpp"
-#include "Monster.hpp"
-#include "Dice.hpp"
+#include "monsters/Monster.hpp"
 #include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;

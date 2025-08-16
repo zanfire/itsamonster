@@ -21,7 +21,7 @@ protected:
             return;
         }
         LOG(attacker.GetName() << " uses Breath Weapon! (Recharge 5-6)");
-        if (target.SavingThrow(Stat::Dexterity, 17)) {
+        if (target.SavingThrow(Ability::Dexterity, 17)) {
             target.TakeDamage(DamageType::Fire, 55 / 2);
         } else {
             target.TakeDamage(DamageType::Fire, 55);

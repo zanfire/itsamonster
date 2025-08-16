@@ -7,7 +7,7 @@ bool Monster::IsCondition(Condition condition) const {
     return m_conditions[int(condition)] > 0;
 }
 
-bool Monster::SavingThrow(Stat stat, int DC) {
+bool Monster::SavingThrow(Ability stat, int DC) {
     int result = GetDice().Roll(20) + m_stats[int(stat)].second;
     if (result >= DC) {
         LOG(m_name << " succeeds the saving throw against " << to_string(stat));
@@ -44,7 +44,6 @@ void Monster::TakeDamage(DamageType type, int damage) {
 void Monster::StartTurn(int round)  {
     m_round = {};
     m_round.rounds = round;
-    ResetMovementBudget();
 }
 
 void Monster::EndTurn() {

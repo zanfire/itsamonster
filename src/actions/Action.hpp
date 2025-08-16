@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Logger.hpp"
-#include "Monster.hpp"
+#include "monsters/Monster.hpp"
 
 namespace itsamonster {
 

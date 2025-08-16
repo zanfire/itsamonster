@@ -16,24 +16,28 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # Explicit source list (core library sources excluding main)
 set(ITSAMONSTER_LIB_SOURCES
-    src/Battlefield.cpp
-    src/Battlefield.hpp
     src/Logger.cpp
     src/Match.cpp
     src/Match.hpp
-    src/Monster.cpp
-    src/Monster.hpp
     src/Types.hpp
-    src/Dice.cpp
-    src/Dice.hpp
     src/actions/Action.cpp
     src/actions/Action.hpp
     src/actions/AttackAction.cpp
     src/actions/AttackAction.hpp
     src/actions/RechargeAction.cpp
     src/actions/RechargeAction.hpp
+    src/Battlefield.cpp
+    src/Battlefield.hpp
+    src/core/Dice.cpp
+    src/core/Dice.hpp
+    src/core/CombatSystem.cpp
+    src/core/CombatSystem.hpp
+    src/reactions/Reaction.cpp
+    src/reactions/Reaction.hpp
+    src/monsters/Monster.cpp
+    src/monsters/Monster.hpp
     src/monsters/YoungGoldDragon.hpp
-    src/monsters/Yochlol.hpp
+    src/monsters/AcidFiend.hpp
     src/monsters/AwakenedPlants.hpp
     src/monsters/Larvae.hpp
 )

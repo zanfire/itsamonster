@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Logger.hpp"
-#include "Monster.hpp"
+#include "monsters/Monster.hpp"
 #include "Battlefield.hpp"
+#include "core/Dice.hpp"
 
 #include <array>
 #include <string_view>
 #include <utility>
 #include <random>
-#include "Dice.hpp"
 #include <iostream>
 #include <execution>
 
@@ -103,15 +103,15 @@ private:
             }
             monster1.StartTurn(round);
             // Move towards if out of melee range (simplistic AI placeholder)
-            double rem1 = monster1.GetRemainingMovement();
-            monster1.MoveTowards(monster2, rem1);
+            //double rem1 = monster1.GetRemainingMovement();
+            //monster1.MoveTowards(monster2, rem1);
             monster1.TakeAction(monster2);
             monster1.EndTurn();
             if (monster2.GetHP() <= 0) break;
             LOG("  " << monster2.GetName() << " acts\n");
             monster2.StartTurn(round);
-            double rem2 = monster2.GetRemainingMovement();
-            monster2.MoveTowards(monster1, rem2);
+            //double rem2 = monster2.GetRemainingMovement();
+            //monster2.MoveTowards(monster1, rem2);
             monster2.TakeAction(monster1);
             monster2.EndTurn();
 

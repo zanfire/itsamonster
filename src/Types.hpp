@@ -7,7 +7,7 @@
 
 namespace itsamonster {
 
-enum class Stat : uint32_t {
+enum class Ability : uint32_t {
     Strength     = 0,
     Dexterity    ,
     Constitution ,
@@ -60,14 +60,14 @@ enum class Size : uint32_t {
     Gargantuan,
 };
 
-inline std::string_view to_string(Stat stat) {
+inline std::string_view to_string(Ability stat) {
     switch (stat) {
-        case Stat::Strength:     return "Strength";
-        case Stat::Dexterity:    return "Dexterity";
-        case Stat::Constitution: return "Constitution";
-        case Stat::Intelligence: return "Intelligence";
-        case Stat::Wisdom:       return "Wisdom";
-        case Stat::Charisma:     return "Charisma";
+        case Ability::Strength:     return "Strength";
+        case Ability::Dexterity:    return "Dexterity";
+        case Ability::Constitution: return "Constitution";
+        case Ability::Intelligence: return "Intelligence";
+        case Ability::Wisdom:       return "Wisdom";
+        case Ability::Charisma:     return "Charisma";
         default:                 return "Unknown";
     }
 }

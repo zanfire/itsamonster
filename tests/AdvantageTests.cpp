@@ -2,7 +2,7 @@
 #include <gmock/gmock.h>
 
 #include "Types.hpp"
-#include "Dice.hpp"
+#include "core/Dice.hpp"
 
 using namespace itsamonster;
 

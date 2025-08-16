@@ -1,7 +1,7 @@
 #pragma once
 
 #include <gmock/gmock.h>
-#include "Dice.hpp"
+#include "core/Dice.hpp"
 
 namespace itsamonster {
 

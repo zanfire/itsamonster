@@ -1,14 +1,11 @@
-#include "Monster.hpp"
 
 #include "monsters/YoungGoldDragon.hpp"
-#include "monsters/Yochlol.hpp"
+#include "monsters/AcidFiend.hpp"
 #include "monsters/AwakenedPlants.hpp"
 #include "monsters/Larvae.hpp"
 #include "Match.hpp"
 
 #include <iostream>
-#include <random>
-#include "Dice.hpp"
 #include <ctime>
 #include <iomanip>
 
@@ -41,7 +38,7 @@ int main(int argc, char **argv) {
     std::cout << "Seed: " << seed << "\n";
 
     //Match<Larvae, AwakenedPlants> match(in_darkness);
-    Match<YoungGoldDragon, Yochlol> match(in_darkness);
+    Match<YoungGoldDragon, AcidFiend> match(in_darkness);
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

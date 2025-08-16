@@ -7,7 +7,6 @@
 #include <string>
 #include <utility>
 #include <random>
-#include "Dice.hpp"
 #include <iostream>
 
 namespace itsamonster {

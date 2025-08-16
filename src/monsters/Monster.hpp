@@ -3,12 +3,12 @@
 #include "Logger.hpp"
 #include "Types.hpp"
 #include "Battlefield.hpp"
+#include "core/Dice.hpp"
 
 #include <array>
 #include <string>
 #include <utility>
 #include <random>
-#include "Dice.hpp"
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -18,9 +18,10 @@ namespace itsamonster {
 using ConditionTracker = std::array<int, static_cast<size_t>(Condition::Count)>; // Track conditions using bitmask
 
 struct RoundTracker {
-    int rounds = 0;
-    bool reaction = false;
-    bool bonusAction = false;
+    int rounds{ 0 };
+    bool reaction{ false };
+    bool bonusAction{ false };
+    int movement{ 0 };
 };
 
 class Monster {
@@ -35,16 +36,16 @@ public:
     virtual void SetPosition(Position p) { m_position = p; }
     // Move towards a target position by at most remaining speed (simple straight-line for now)
     virtual void MoveTowards(const Monster& target, double &remainingSpeed);
-    virtual void ResetMovementBudget() { m_movementBudget = static_cast<double>(m_speed); }
-    virtual double GetRemainingMovement() const { return m_movementBudget; }
 
     virtual std::string_view GetName() const { return m_name; }
     virtual int GetHP() const { return m_hp; }
     virtual int GetAC() const { return m_ac; }
 
+    virtual int GetReach() const { return 5; } // Default reach for melee attacks
+
     virtual bool IsCondition(Condition condition) const;
     virtual void SetCondition(Condition condition, int duration);
-    virtual bool SavingThrow(Stat stat, int DC);
+    virtual bool SavingThrow(Ability stat, int DC);
     virtual void TakeAction(Monster& target) = 0;
     virtual void TakeDamage(DamageType type, int damage);
     virtual void TakeReaction(Monster& attacker, int damage, bool ishit) {}
@@ -65,7 +66,6 @@ private:
     std::array<std::pair<int, int>, 6> m_stats{};
     ConditionTracker m_conditions{};
     Position m_position{};
-    double m_movementBudget{ 0.0 };
 protected:
     RoundTracker m_round{};
 };

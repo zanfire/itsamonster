@@ -5,14 +5,14 @@
 
 namespace itsamonster {
 
-struct Yochlol : public Monster {
+struct AcidFiend : public Monster {
     struct CausticLash : public AttackAction {
         CausticLash() : AttackAction("Caustic Lash", 8, 25, DamageType::Acid, 5) {}
         ~CausticLash() override = default;
     };
 
-    Yochlol()
-    : Monster("Yochlol", 153, 15, 30, {
+    AcidFiend()
+    : Monster("AcidFiend", 153, 15, 30, {
             std::make_pair(15, 6),
             std::make_pair(19, 6),
             std::make_pair(18, 5),
@@ -45,7 +45,7 @@ struct Yochlol : public Monster {
         if (ishit) {
             m_round.reaction = true;
             LOG(GetName() << " takes a reaction to " << attacker.GetName() << "'s attack!");
-            if (!attacker.SavingThrow(Stat::Constitution, 15)) {
+            if (!attacker.SavingThrow(Ability::Constitution, 15)) {
                 attacker.SetCondition(Condition::Incapacitated, m_round.rounds + 2);
             }
         }

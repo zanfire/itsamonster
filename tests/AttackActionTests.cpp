@@ -3,7 +3,6 @@
 
 #include "actions/AttackAction.hpp"
 #include "monsters/Larvae.hpp"
-#include "Dice.hpp"
 #include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;
