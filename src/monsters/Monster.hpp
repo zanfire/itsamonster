@@ -4,6 +4,7 @@
 #include "Types.hpp"
 #include "core/Dice.hpp"
 #include "core/Battlefield.hpp"
+#include "core/CombatSystem.hpp"
 
 #include <array>
 #include <string>
@@ -15,6 +16,9 @@
 
 namespace itsamonster {
 
+using MonsterPtr = Monster*;
+
+
 using ConditionTracker = std::array<int, static_cast<size_t>(Condition::Count)>; // Track conditions using bitmask
 
 struct RoundTracker {
@@ -24,24 +28,32 @@ struct RoundTracker {
     int movement{ 0 };
 };
 
-struct IAIStrategy; // forward declaration for unique_ptr member
+struct Strategy; // forward declaration for unique_ptr member
 
-class Monster {
+class Monster : public TurnEventListener {
 public:
-    Monster(std::string_view n, int h, int a, int spd, std::array<std::pair<int, int>, 6> s)
-        : m_name(std::move(n)), m_hp(h), m_ac(a), m_speed(spd), m_stats(std::move(s)) {}
+    Monster(std::string_view name, int hp, int ac, int speed, std::array<std::pair<int, int>, 6> s)
+        : m_name(std::move(name)), m_hp(hp), m_ac(ac), m_speed(speed), m_stats(std::move(s)) {}
     virtual ~Monster();
 
-        // Movement & spatial
+    /// @brief Return the unique instance ID of the monster.
+    /// @return The unique instance ID.
+    MonsterInstanceId GetInstanceId() const { return reinterpret_cast<MonsterInstanceId>(this); }
+
+    // Movement & spatial
     virtual int GetSpeed() const { return m_speed; }
-    virtual Position GetPosition() const { return m_position; }
-    virtual void SetPosition(Position p);
+    Position GetPosition() const {
+        return{ 0, 0, 0 };
+    }
 
     virtual std::string_view GetName() const { return m_name; }
     virtual int GetHP() const { return m_hp; }
     virtual int GetAC() const { return m_ac; }
 
     virtual int GetReach() const { return 5; } // Default reach for melee attacks
+
+    virtual struct AttackMeleeAction* GetMeleeAttack() { return nullptr; }
+    virtual struct AttackRangedAction* GetRangedAttack() { return nullptr; }
 
     virtual bool IsCondition(Condition condition) const;
     virtual void SetCondition(Condition condition, int duration);
@@ -60,8 +72,12 @@ public:
     virtual bool HasDarkvision() const { return false; }
 
     // AI strategy accessors (non-owning pointer; external code manages lifetime)
-    void SetAI(struct IAIStrategy* ai) { m_ai = ai; }
-    struct IAIStrategy* GetAI() const { return m_ai; }
+    void SetAI(std::shared_ptr<struct Strategy> ai) { m_ai = ai; }
+    struct Strategy* GetAI() const { return m_ai.get(); }
+
+private:
+    void OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) override;
+    void OnTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& ctx) override;
 private:
     std::string_view m_name;
     int m_hp{ 0 };
@@ -71,10 +87,9 @@ private:
     bool m_hover{ false }; // true if the monster can hover (e.g. flying creatures)
     std::array<std::pair<int, int>, 6> m_stats{};
     ConditionTracker m_conditions{};
-    Position m_position{};
 protected:
     RoundTracker m_round{};
-    struct IAIStrategy* m_ai{ nullptr };
+    std::shared_ptr<struct Strategy> m_ai{};
 };
 
 } // namespace itsamonster

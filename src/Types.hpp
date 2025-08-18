@@ -7,6 +7,8 @@
 
 namespace itsamonster {
 
+using MonsterInstanceId = uintptr_t; // Unique ID for monster instances
+
 enum class Ability : uint32_t {
     Strength     = 0,
     Dexterity    ,

@@ -77,12 +77,6 @@ private:
     int Fight(MonsterType1 &monster1, MonsterType2 &monster2) {
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
-
-        Battlefield field(200, 200); // 200ft square battlefield
-        // Initial placement: 30ft apart horizontally
-        monster1.SetPosition({50, 100});
-        monster2.SetPosition({80, 100});
-
         if (m_darkness) {
             LOG("The fight is happening in darkness!");
             if (!monster1.HasDarkvision()) {

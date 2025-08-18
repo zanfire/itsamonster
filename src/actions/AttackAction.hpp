@@ -9,6 +9,7 @@ struct AttackAction : public Action {
 
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const override;
     virtual Advantage HasAdvantage(const Monster& attacker, const Monster& target) const;
+    int GetRange() const { return m_range; }
 
 protected:
     void Execute(Monster& attacker, Monster& target) override;

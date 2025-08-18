@@ -1,8 +1,6 @@
 
 #include "monsters/YoungGoldDragon.hpp"
 #include "monsters/AcidFiend.hpp"
-#include "monsters/AwakenedPlants.hpp"
-#include "monsters/Larvae.hpp"
 #include "Match.hpp"
 
 #include <iostream>

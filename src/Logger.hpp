@@ -33,3 +33,10 @@ private:
         std::cout << msg << std::endl; \
     } \
 } while(0)
+
+#define LOG_ERROR(msg) do { \
+    if (Logger::Instance().IsVerbose()) { \
+        std::cout << msg << std::endl; \
+    } \
+} while(0)
+

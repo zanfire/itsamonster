@@ -1,15 +1,11 @@
 #include "Monster.hpp"
-#include <algorithm>
+
 #include "core/CombatSystem.hpp"
+#include <iomanip>
 
 using namespace itsamonster;
 
 Monster::~Monster() = default;
-void Monster::SetPosition(Position p) {
-    Position old = m_position;
-    m_position = p;
-    CombatSystem::Instance().NotifyPositionChanged(*this, old, m_position);
-}
 
 bool Monster::IsCondition(Condition condition) const {
     return m_conditions[int(condition)] > 0;
@@ -62,5 +58,31 @@ void Monster::EndTurn() {
             deadline = 0; // Remove expired condition
         }
         ++condition;
+    }
+}
+
+void Monster::OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
+    if (&monster != this) return;
+    std::cout << std::fixed << std::setprecision(2);
+    LOG(monster.GetName() << " moved from " << (oldPos ? std::to_string(oldPos->x) + "," + std::to_string(oldPos->y) : "unknown")
+        << " to " << newPos.x << "," << newPos.y);
+}
+
+void Monster::OnTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& ctx) {
+    if (&monster != this) return;
+
+    switch (ev) {
+    case TurnEvent::StartTurn:
+        LOG(monster.GetName() << " starts their turn.");
+        break;
+    case TurnEvent::EndTurn:
+        LOG(monster.GetName() << " ends their turn.");
+        break;
+    case TurnEvent::BeforeAction:
+        LOG(monster.GetName() << " is about to act.");
+        break;
+    case TurnEvent::AfterAction:
+        LOG(monster.GetName() << " has completed their action.");
+        break;
     }
 }

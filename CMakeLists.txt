@@ -30,8 +30,8 @@ set(ITSAMONSTER_LIB_SOURCES
     src/core/Battlefield.hpp
     src/core/Dice.cpp
     src/core/Dice.hpp
-    src/core/AI.cpp
-    src/core/AI.hpp
+    src/core/Strategy.cpp
+    src/core/Strategy.hpp
     src/core/CombatSystem.cpp
     src/core/CombatSystem.hpp
     src/reactions/Reaction.cpp

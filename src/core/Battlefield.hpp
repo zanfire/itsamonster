@@ -1,8 +1,14 @@
 #pragma once
 
+#include "Types.hpp"
+
 #include <cmath>
+#include <map>
+#include <optional>
 
 namespace itsamonster {
+
+class CombatSystem;
 
 struct Position {
     int x{0};
@@ -21,7 +27,7 @@ class Monster; // forward declaration
 
 class Battlefield {
 public:
-    Battlefield(int w, int h) : m_width(w), m_height(h) {}
+    Battlefield(CombatSystem& system, int w, int h) : m_system(system), m_width(w), m_height(h) {}
 
     int GetWidth() const { return m_width; }
     int GetHeight() const { return m_height; }
@@ -32,23 +38,22 @@ public:
         return p;
     }
 
-        // Movement helpers: move in discrete steps, emitting a position change per step
+    // Movement helpers: move in discrete steps, emitting a position change per step
     // Move towards targetPos, consuming remainingSpeed (in feet), stopping within stopDistance.
     // stepFeet controls the granularity of events (default 5 ft).
-    void MoveTowardsInSteps(Monster& mover,
-                            const Position& targetPos,
-                            double& remainingSpeed,
-                            double stopDistance,
-                            double stepFeet = 5.0);
+    double MoveTowardsInSteps(Monster& mover, const Position& targetPos, double& remainingSpeed, double stopDistance, double stepFeet = 5.0);
 
     // Move away from fromPos until at least targetDistance away, consuming remainingSpeed.
     // stepFeet controls the granularity (default 5 ft).
-    void MoveAwayInSteps(Monster& mover,
-                         const Position& fromPos,
-                         double& remainingSpeed,
-                         double targetDistance,
-                         double stepFeet = 5.0);
+    void MoveAwayInSteps(Monster& mover, const Position& fromPos, double& remainingSpeed, double targetDistance, double stepFeet = 5.0);
+
+    double GetDistance(MonsterInstanceId a, MonsterInstanceId b) const;
+
+    void SetPosition(Monster& monster, Position p);
+    std::optional<Position> GetPosition(MonsterInstanceId monster) const;
 private:
+    CombatSystem& m_system;
+    std::map<MonsterInstanceId, Position> m_positions; // Track monster positions
     int m_width;
     int m_height;
 };

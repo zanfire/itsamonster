@@ -1,7 +1,8 @@
 #include "CombatSystem.hpp"
 
+#include "monsters/Monster.hpp"
 #include "reactions/Reaction.hpp"
-#include "AI.hpp"
+#include "Strategy.hpp"
 
 #include <algorithm>
 
@@ -15,7 +16,7 @@ void CombatSystem::RemoveListener(TurnEventListener* listener) {
     m_listeners.erase(std::remove(m_listeners.begin(), m_listeners.end(), listener), m_listeners.end());
 }
 
-void CombatSystem::NotifyPositionChanged(Monster& monster, const Position& oldPos, const Position& newPos) {
+void CombatSystem::NotifyPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
     for (auto listener : m_listeners) {
         listener->OnPositionChanged(monster, oldPos, newPos);
     }
@@ -27,49 +28,51 @@ void CombatSystem::NotifyTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& 
     }
 }
 
-void CombatSystem::Round(std::array<Monster*, 2> initiativeOrder) {
+void CombatSystem::Round() {
     m_round++;
-    // Initialize trackers for this round
-    for (int i = 0; i < 2; ++i) {
-        m_turnTrackers[i].round = m_round;
-        m_turnTrackers[i].self = initiativeOrder[i];
-        m_turnTrackers[i].resources = {};
-    }
+    std::vector<Monster*> initiativeOrder;
+    std::transform(m_turnTrackers.begin(), m_turnTrackers.end(), std::back_inserter(initiativeOrder),
+                   [](const auto& pair) { return pair.second.self; });
+    std::sort(initiativeOrder.begin(), initiativeOrder.end(),
+              [this](Monster* a, Monster* b) { return GetTurnTracker(*a)->initiative > GetTurnTracker(*b)->initiative; });
 
-    for (int idx = 0; idx < 2; ++idx) {
-        Monster* monster = initiativeOrder[idx];
-        TurnTracker& ctx = m_turnTrackers[idx];
+    std::vector<Monster*> enemies;
+    for (auto monster : initiativeOrder) {
+        auto ctx = GetTurnTracker(*monster);
 
-        NotifyTurnEvent(*monster, TurnEvent::StartTurn, ctx);
-        monster->StartTurn(m_round);
-
-        // Movement phase hooks if needed
-        // NotifyTurnEvent(*monster, TurnEvent::BeforeMove, ctx);
-        // NotifyTurnEvent(*monster, TurnEvent::AfterMove, ctx);
-
-        // Determine opponent (2-creature initiative assumed here)
-    Monster* opponent = (monster == initiativeOrder[0]) ? initiativeOrder[1] : initiativeOrder[0];
-
-        // Perform actions (AI strategy if available; otherwise monster-defined action)
-        if (opponent) {
-            if (auto* ai = monster->GetAI()) {
-                ai->TakeTurn(*monster, *opponent);
-            } else {
-                monster->TakeAction(*opponent);
-            }
+        if (!ctx) {
+            LOG_ERROR("No turn tracker found for monster: " << monster->GetName());
+            continue;
         }
-        NotifyTurnEvent(*monster, TurnEvent::AfterAction, ctx);
 
-        monster->EndTurn();
-        NotifyTurnEvent(*monster, TurnEvent::EndTurn, ctx);
+        for (auto m : initiativeOrder)
+        {
+            if (m != monster) enemies.push_back(m);
+        }
+
+        Turn(*monster, *ctx, enemies);
+
+        enemies.clear(); // Reset enemies for next monster
     }
+}
+
+void CombatSystem::Turn(Monster& monster, TurnTracker& ctx, std::vector<Monster*> enemies) {
+    NotifyTurnEvent(monster, TurnEvent::StartTurn, ctx);
+
+    auto* ai = monster.GetAI();
+    if (ai) {
+        ai->TakeTurn(monster, ctx, enemies);
+    } else {
+        LOG_ERROR("Monster " << monster.GetName() << " has no AI assigned.");
+    }
+    NotifyTurnEvent(monster, TurnEvent::EndTurn, ctx);
 }
 
 void CombatSystem::TriggerReaction(Monster& self, Monster& other, Reaction& reaction) {
     // check if self has reaction available
     TurnTracker* tracker = GetTurnTracker(self);
-    if (tracker && !tracker->resources.usedReaction) {
-        tracker->resources.usedReaction = true;
+    if (tracker && !tracker->resources.reaction) {
+        tracker->resources.reaction = true;
         reaction.Trigger(self, other, TriggerType::OnAttack);
         NotifyTurnEvent(self, TurnEvent::AfterAction, *tracker);
     } else {
@@ -78,24 +81,13 @@ void CombatSystem::TriggerReaction(Monster& self, Monster& other, Reaction& reac
 }
 
 TurnTracker* CombatSystem::GetTurnTracker(Monster& monster) {
-    for (auto& tracker : m_turnTrackers) {
-        if (tracker.self == &monster) {
-            return &tracker;
-        }
-    }
-    return nullptr;
+    auto it = m_turnTrackers.find(monster.GetInstanceId());
+    return (it != m_turnTrackers.end()) ? &it->second : nullptr;
 }
 
-const TurnTracker* CombatSystem::GetTurnTracker(const Monster& monster) const {
-    for (auto const& tracker : m_turnTrackers) {
-        if (tracker.self == &monster) {
-            return &tracker;
-        }
-    }
-    return nullptr;
-}
-
-bool CombatSystem::HasUsedReaction(const Monster& monster) const {
-    auto* t = GetTurnTracker(monster);
-    return t ? t->resources.usedReaction : false;
+void CombatSystem::AddMonster(MonsterPtr monster, int initiative, Position pos) {
+    m_turnTrackers[monster->GetInstanceId()].self = monster;
+    m_turnTrackers[monster->GetInstanceId()].initiative = initiative;
+    m_battlefield.SetPosition(*monster, pos);
+    AddListener(monster);
 }

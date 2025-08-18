@@ -4,18 +4,25 @@
 #include "reactions/Reaction.hpp"
 #include "monsters/Larvae.hpp"
 #include "monsters/AwakenedPlants.hpp"
+#include <core/Strategy.hpp>
+#include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;
 
-/*
-TEST(OpportunityAttack, TriggersAndConsumesReactionOnEnterReach) {
-    // Arrange: two monsters and reaction listener on defender
-    Larvae attacker;            // will move
-    AwakenedPlants defender;    // has OA reaction
+TEST(CombatSystem, Test1) {
+    Logger::Instance().SetVerbose(true);
 
-    // Place them apart then simulate movement into reach of defender
-    attacker.SetPosition({0, 0});
-    defender.SetPosition({10, 0});
+    MockDice mock;
+    ScopedDiceOverride scoped(&mock);
+    EXPECT_CALL(mock, D20(testing::_)).WillRepeatedly(testing::Return(15));
+    CombatSystem system;
+
+    // Arrange: two monsters and reaction listener on defender
+    AwakenedPlants attacker(system);
+    AwakenedPlants defender(system);    // has OA reaction
+
+    system.AddMonster(&attacker, 19, { 0, 0, 0});
+    system.AddMonster(&defender, 20, { 15, 15, 0 });
 
     OpportunityAttackReaction oa(defender);
 
@@ -23,16 +30,15 @@ TEST(OpportunityAttack, TriggersAndConsumesReactionOnEnterReach) {
     std::array<MonsterPtr, 2> order{ &attacker, &defender };
 
     // Act: open a round to initialize trackers, then notify position change to simulate entering reach
-    CombatSystem::GetCurrent()->Round(order);
+    system.Round();
 
     // Simulate attacker moving into reach of defender
     Position oldPos = attacker.GetPosition();
     Position newPos{5, 0}; // within 5ft reach assuming reach=5
-    CombatSystem::GetCurrent()->GetBattlefield().SetPosition(attacker, newPos);
-    CombatSystem::GetCurrent()->NotifyPositionChanged(attacker, oldPos, newPos);
+    system.GetBattlefield().SetPosition(attacker, newPos);
+    system.NotifyPositionChanged(attacker, oldPos, newPos);
 
-    auto tracker = CombatSystem::GetCurrent()->GetTurnTracker(defender);
+    auto tracker = system.GetTurnTracker(defender);
     // Assert: defender should have used reaction (OA consumed)
-    EXPECT_TRUE(tracker->resources.usedReaction);
+    EXPECT_TRUE(tracker->resources.reaction);
 }
-*/
