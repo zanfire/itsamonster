@@ -30,11 +30,10 @@ void AttackAction::Execute(Monster& attacker, Monster& target) {
     bool hit = !nat1 && (nat20 || attackResult >= target.GetAC());
     LOG("Executing action: " << m_name << " roll=" << d20 << (nat20?"(nat20)":"") << (nat1?"(nat1)":"") << " total=" << attackResult << " vs AC " << target.GetAC() << " " << to_string(attackAdvantage) << " " << (hit?"Hit!":"Miss!"));
     if (hit) {
-        int damage = m_damage;
-        // no crits damage for monster
-        //if (nat20) damage *= 2; // simple crit: double base damage (dice not modeled yet)
-        target.TakeReaction(attacker, damage, true);
-        target.TakeDamage(m_damageType, damage);
+
+        for (const auto& [type, amount] : m_damage) {
+            target.TakeDamage(type, amount);
+        }
     }
 }
 

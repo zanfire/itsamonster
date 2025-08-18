@@ -5,6 +5,9 @@
 
 using namespace itsamonster;
 
+// Initialize the global atomic instance ID counter (starts at 0 so first assigned is 1)
+std::atomic<MonsterInstanceId> Monster::s_nextId{ 0 };
+
 Monster::~Monster() = default;
 
 bool Monster::IsCondition(Condition condition) const {
@@ -28,9 +31,16 @@ void Monster::SetCondition(Condition condition, int deadline) {
 }
 
 void Monster::TakeDamage(DamageType type, int damage) {
+    // Allow listeners to modify damage before resistances/vulnerability are applied
+    DamagePayload dmg;
+    dmg.monster = this;
+    dmg.damages.emplace_back(type, damage);
+    dmg.phase = DamagePhase::BeforeApply;
+    m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &dmg);
+
     if (IsImmune(type)) {
+        damage = 0;
         LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
-        return;
     }
     if (IsResistant(type)) {
         damage /= 2;
@@ -41,8 +51,13 @@ void Monster::TakeDamage(DamageType type, int damage) {
         LOG(m_name << " is vulnerable to " << to_string(type) << ", damage doubled to " << damage);
     }
     int before = m_hp;
-    m_hp -= damage;
-    LOG("    " << m_name << " takes " << damage << " damage (" << before << " -> " << m_hp << ") " << to_string(type) << "\n");
+    auto after = before - damage;
+    LOG("    " << m_name << " takes " << damage << " damage (" << before << " -> " << after << ") " << to_string(type) << "\n");
+    DamagePayload dmgAfter;
+    dmgAfter.monster = this;
+    dmgAfter.damages.emplace_back(type, damage);
+    dmgAfter.phase = DamagePhase::AfterApply;
+    m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &dmgAfter);
 }
 
 void Monster::StartTurn(int round)  {
@@ -61,28 +76,60 @@ void Monster::EndTurn() {
     }
 }
 
-void Monster::OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
-    if (&monster != this) return;
+bool Monster::OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
+    if (&monster != this) return true;
     std::cout << std::fixed << std::setprecision(2);
     LOG(monster.GetName() << " moved from " << (oldPos ? std::to_string(oldPos->x) + "," + std::to_string(oldPos->y) : "unknown")
         << " to " << newPos.x << "," << newPos.y);
+    return true;
 }
 
-void Monster::OnTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& ctx) {
-    if (&monster != this) return;
+bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
+    auto monsterPayload = dynamic_cast<MonsterPayload*>(payload);
+    if (monsterPayload == nullptr || monsterPayload->monster != this) return true;
 
     switch (ev) {
     case TurnEvent::StartTurn:
-        LOG(monster.GetName() << " starts their turn.");
+        LOG(monsterPayload->monster->GetName() << " starts their turn.");
         break;
     case TurnEvent::EndTurn:
-        LOG(monster.GetName() << " ends their turn.");
+        LOG(monsterPayload->monster->GetName() << " ends their turn.");
         break;
     case TurnEvent::BeforeAction:
-        LOG(monster.GetName() << " is about to act.");
+        LOG(monsterPayload->monster->GetName() << " is about to act.");
         break;
     case TurnEvent::AfterAction:
-        LOG(monster.GetName() << " has completed their action.");
+        LOG(monsterPayload->monster->GetName() << " has completed their action.");
+        break;
+    case TurnEvent::OnDamageApplied:
+        auto dmgPayload = dynamic_cast<DamagePayload*>(payload);
+        if (dmgPayload) {
+            OnDamageApplied(dmgPayload);
+        }
         break;
     }
+    return true;
+}
+
+bool Monster::OnDamageApplied(DamagePayload* payload) {
+    if (payload->monster != this) return true; // Not our damage
+    if (payload->phase != DamagePhase::AfterApply) {
+        LOG(m_name << " received damage before application phase, skipping immunity/resistance checks.");
+        return true; // Only handle after-apply phase
+    }
+    for (auto& [type, amount] : payload->damages) {
+        if (IsImmune(type)) {
+            amount = 0;
+            LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
+        }
+        if (IsResistant(type)) {
+            amount /= 2;
+            LOG(m_name << " is resistant to " << to_string(type) << ", damage halved to " << amount );
+        }
+        if (IsVulnerable(type)) {
+            amount *= 2;
+            LOG(m_name << " is vulnerable to " << to_string(type) << ", damage doubled to " << amount);
+        }
+    }
+    return true;
 }

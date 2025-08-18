@@ -13,6 +13,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <atomic>
 
 namespace itsamonster {
 
@@ -32,13 +33,16 @@ struct Strategy; // forward declaration for unique_ptr member
 
 class Monster : public TurnEventListener {
 public:
-    Monster(std::string_view name, int hp, int ac, int speed, std::array<std::pair<int, int>, 6> s)
-        : m_name(std::move(name)), m_hp(hp), m_ac(ac), m_speed(speed), m_stats(std::move(s)) {}
+    Monster(CombatSystem& system, std::string_view name, int hp, int ac, int speed, std::array<std::pair<int, int>, 6> s)
+        : m_name(std::move(name)), m_hp(hp), m_ac(ac), m_speed(speed), m_stats(std::move(s)), m_system(system) {
+        // Assign a unique, monotonically increasing instance ID starting from 1
+        m_id = s_nextId.fetch_add(1, std::memory_order_relaxed) + 1;
+    }
     virtual ~Monster();
 
     /// @brief Return the unique instance ID of the monster.
     /// @return The unique instance ID.
-    MonsterInstanceId GetInstanceId() const { return reinterpret_cast<MonsterInstanceId>(this); }
+    MonsterInstanceId GetInstanceId() const { return m_id; }
 
     // Movement & spatial
     virtual int GetSpeed() const { return m_speed; }
@@ -74,12 +78,14 @@ public:
     // AI strategy accessors (non-owning pointer; external code manages lifetime)
     void SetAI(std::shared_ptr<struct Strategy> ai) { m_ai = ai; }
     struct Strategy* GetAI() const { return m_ai.get(); }
-
 private:
-    void OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) override;
-    void OnTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& ctx) override;
+    bool OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) override;
+    bool OnTurnEvent(TurnEvent ev, EventPayload* payload) override;
+
+    bool OnDamageApplied(DamagePayload* payload);
 private:
     std::string_view m_name;
+    MonsterInstanceId m_id{0};
     int m_hp{ 0 };
     int m_ac{ 0 };
     int m_speed{ 0 }; // feet per round
@@ -90,6 +96,11 @@ private:
 protected:
     RoundTracker m_round{};
     std::shared_ptr<struct Strategy> m_ai{};
+    CombatSystem& m_system;
+
+private:
+    // Global, process-wide counter for generating unique Monster instance IDs.
+    static std::atomic<MonsterInstanceId> s_nextId;
 };
 
 } // namespace itsamonster

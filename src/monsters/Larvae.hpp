@@ -6,23 +6,23 @@
 namespace itsamonster {
 
 struct Larvae : public Monster {
-    struct Bite : public AttackAction {
-        Bite() : AttackAction("Bite", 1, 1, DamageType::Necrotic, 5) {}
+    struct Bite : public AttackMeleeAction {
+        Bite(CombatSystem& system) : AttackMeleeAction(system, "Bite", 1, { std::make_pair(DamageType::Necrotic, 1) }, 5) {
+        }
         ~Bite() override = default;
     };
-    Larvae()
-    : Monster("Larvae", 9, 9, 10, {
+    Larvae(CombatSystem& system)
+    : Monster(system, "Larvae", 9, 9, 10, {
             std::make_pair(9, -1),
             std::make_pair(9, -1),
             std::make_pair(10, 0),
             std::make_pair(6, -2),
             std::make_pair(10, 0),
             std::make_pair(2, -4)
-        }) {}
+        }), m_bite(system) {}
 
     void TakeAction(Monster& target) override {
-        Bite biteAction;
-        biteAction.Perform(*this, target);
+        m_bite.Perform(*this, target);
     }
 
     bool IsResistant(DamageType damageType) const override {
@@ -31,6 +31,9 @@ struct Larvae : public Monster {
     }
 
     bool HasDarkvision() const override { return true; }
+
+private:
+    Bite m_bite;
 };
 
 } // namespace itsamonster

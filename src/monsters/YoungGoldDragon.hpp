@@ -6,8 +6,8 @@
 
 
 namespace itsamonster {
-struct Rend : public AttackAction {
-    Rend() : AttackAction("Rend", 10, 17, DamageType::Slashing, 5) {}
+struct Rend : public AttackMeleeAction {
+    Rend(CombatSystem& system) : AttackMeleeAction(system, "Rend", 10, { std::make_pair(DamageType::Slashing, 17) }, 5) {}
     ~Rend() override = default;
 };
 
@@ -33,8 +33,8 @@ protected:
 struct YoungGoldDragon : public Monster {
     BreathWeapon m_breath;
 
-    YoungGoldDragon()
-    : Monster("Young Gold Dragon", 178, 18, 80, {
+    YoungGoldDragon(CombatSystem& system)
+    : Monster(system, "Young Gold Dragon", 178, 18, 80, {
             std::make_pair(23, 6),
             std::make_pair(14, 6),
             std::make_pair(21, 5),
@@ -57,7 +57,7 @@ struct YoungGoldDragon : public Monster {
         else
         {
             // Multiattack (3 rends)
-            Rend rendAction;
+            Rend rendAction(m_system);
             for (int i = 0; i < 3; ++i) {
                 rendAction.Perform(*this, target);
             }

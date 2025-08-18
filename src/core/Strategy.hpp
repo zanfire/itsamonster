@@ -13,7 +13,7 @@ struct Strategy {
     explicit Strategy(CombatSystem& system) : m_system(system) {}
     virtual ~Strategy() = default;
     // Execute movement and action selection for this turn against target
-    virtual void TakeTurn(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) = 0;
+    virtual void TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) = 0;
 
 protected:
     CombatSystem& m_system;
@@ -23,7 +23,7 @@ struct Behaviour {
     explicit Behaviour(CombatSystem& system) : m_system(system) {}
 
     // Default behavior is to do nothing
-    virtual void Execute(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) = 0;
+    virtual void Execute(Monster& monster, const std::vector<Monster*>& enemies) = 0;
 
 protected:
     CombatSystem& m_system;
@@ -32,7 +32,7 @@ protected:
 struct MoveCloseCombatBehaviour : public Behaviour {
     explicit MoveCloseCombatBehaviour(CombatSystem& system, int close) : Behaviour(system), m_closeDistance(close) {}
     // Default move behaviour does nothing
-    void Execute(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) override;
+    void Execute(Monster& monster, const std::vector<Monster*>& enemies) override;
 
 private:
     int m_closeDistance;
@@ -41,7 +41,7 @@ private:
 struct AttackBehaviour : public Behaviour {
     explicit AttackBehaviour(CombatSystem& system) : Behaviour(system) {}
     // Default move behaviour does nothing
-    void Execute(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) override;
+    void Execute(Monster& monster, const std::vector<Monster*>& enemies) override;
 };
 
 // Simple melee AI: close to melee reach and attack.
@@ -52,7 +52,7 @@ public:
         : Strategy(system), m_attackBehaviour(system), m_moveBehaviour(system, stopDistance) { }
     ~MeleeApproachAI() override = default;
 
-    void TakeTurn(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) override;
+    void TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) override;
 private:
     AttackBehaviour m_attackBehaviour;
     MoveCloseCombatBehaviour m_moveBehaviour;
@@ -65,7 +65,7 @@ public:
     RangedKiteAI(CombatSystem& system, double minPreferred = 10.0, double maxPreferred = 30.0)
         : Strategy(system), m_minPreferred(minPreferred), m_maxPreferred(std::max(minPreferred, maxPreferred)) {}
     ~RangedKiteAI() override = default;
-    void TakeTurn(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) override;
+    void TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) override;
 private:
     double m_minPreferred{10.0};
     double m_maxPreferred{30.0};

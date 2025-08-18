@@ -4,7 +4,8 @@
 
 namespace itsamonster {
 struct AttackAction : public Action {
-    AttackAction(std::string_view name, int attackBonus, int damage, DamageType dt, int range) : m_name(name), m_attackBonus(attackBonus), m_damage(damage), m_damageType(dt), m_range(range) {}
+    AttackAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range)
+        : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damage(std::move(damage)), m_range(range) {}
     ~AttackAction() override = default;
 
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const override;
@@ -14,22 +15,23 @@ struct AttackAction : public Action {
 protected:
     void Execute(Monster& attacker, Monster& target) override;
 
+protected:
+    CombatSystem& m_system;
     std::string_view m_name;
     int m_attackBonus;
-    int m_damage;
-    DamageType m_damageType;
+    std::vector<std::pair<DamageType, int>> m_damage;
     int m_range;
 };
 
 struct AttackMeleeAction : public AttackAction {
-    AttackMeleeAction(std::string_view name, int attackBonus, int damage, DamageType dt, int range)
-        : AttackAction(name, attackBonus, damage, dt, range) {}
+    AttackMeleeAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range)
+        : AttackAction(system, name, attackBonus, std::move(damage), range) {}
     ~AttackMeleeAction() override = default;
 };
 
 struct AttackRangedAction : public AttackAction {
-    AttackRangedAction(std::string_view name, int attackBonus, int damage, DamageType dt, int range)
-        : AttackAction(name, attackBonus, damage, dt, range) {}
+    AttackRangedAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range)
+        : AttackAction(system, name, attackBonus, std::move(damage), range) {}
     ~AttackRangedAction() override = default;
 
     virtual Advantage HasAdvantage(const Monster& attacker, const Monster& target) const;

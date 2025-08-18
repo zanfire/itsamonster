@@ -11,8 +11,8 @@ struct AcidFiend : public Monster {
         ~CausticLash() override = default;
     };
 
-    AcidFiend()
-    : Monster("AcidFiend", 153, 15, 30, {
+    AcidFiend(CombatSystem& system)
+    : Monster(system, "AcidFiend", 153, 15, 30, {
             std::make_pair(15, 6),
             std::make_pair(19, 6),
             std::make_pair(18, 5),

@@ -87,9 +87,26 @@ double Battlefield::GetDistance(MonsterInstanceId a, MonsterInstanceId b) const 
 
 void Battlefield::SetPosition(Monster& monster, Position p) {
     p = Clamp(p);
-    auto oldPos = m_positions[monster.GetInstanceId()];
+    std::optional<Position> oldPos{};
+    auto it = m_positions.find(monster.GetInstanceId());
+    if (it != m_positions.end()) {
+        oldPos = it->second;
+    }
+
+    // Allow listeners to alter the intended new position (e.g., forced movement prevention, teleport tweaks)
+    PositionPayload payload;
+    payload.monster = &monster;
+    payload.oldPos = oldPos;
+    payload.newPos = p;
+    m_system.NotifyTurnEvent(TurnEvent::BeforeMove, &payload);
+    p = Clamp(payload.newPos);
+
     m_positions[monster.GetInstanceId()] = p;
     m_system.NotifyPositionChanged(monster, oldPos, p);
+
+    payload.oldPos = oldPos;
+    payload.newPos = p;
+    m_system.NotifyTurnEvent(TurnEvent::AfterMove, &payload);
 }
 
 std::optional<Position> Battlefield::GetPosition(MonsterInstanceId monster) const {

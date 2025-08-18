@@ -34,6 +34,9 @@ set(ITSAMONSTER_LIB_SOURCES
     src/core/Strategy.hpp
     src/core/CombatSystem.cpp
     src/core/CombatSystem.hpp
+    src/core/TurnEvent.hpp
+    src/core/TurnTracker.cpp
+    src/core/TurnTracker.hpp
     src/reactions/Reaction.cpp
     src/reactions/Reaction.hpp
     src/monsters/Monster.cpp
@@ -48,10 +51,9 @@ add_library(itsamonster_lib ${ITSAMONSTER_LIB_SOURCES})
 target_include_directories(itsamonster_lib PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 if(MSVC)
-    target_compile_options(itsamonster_lib PRIVATE /GR-)
     target_compile_definitions(itsamonster_lib PRIVATE _HAS_EXCEPTIONS=0)
 else()
-    target_compile_options(itsamonster_lib PRIVATE -fno-rtti -fno-exceptions)
+    target_compile_options(itsamonster_lib PRIVATE -fno-exceptions)
 endif()
 
 # Main executable with only entry point

@@ -22,72 +22,63 @@ void CombatSystem::NotifyPositionChanged(Monster& monster, std::optional<Positio
     }
 }
 
-void CombatSystem::NotifyTurnEvent(Monster& monster, TurnEvent ev, TurnTracker& ctx) {
+bool CombatSystem::NotifyTurnEvent(TurnEvent ev, EventPayload* payload) {
+    bool returnValue = true;
     for (auto listener : m_listeners) {
-        listener->OnTurnEvent(monster, ev, ctx);
+        returnValue &= listener->OnTurnEvent(ev, payload);
+        if (!returnValue) {
+            LOG("Turn event " << to_string(ev) << " was cancelled by a listener");
+            break; // Stop processing if any listener cancels the event
+        }
     }
+    return returnValue;
 }
 
 void CombatSystem::Round() {
     m_round++;
-    std::vector<Monster*> initiativeOrder;
-    std::transform(m_turnTrackers.begin(), m_turnTrackers.end(), std::back_inserter(initiativeOrder),
-                   [](const auto& pair) { return pair.second.self; });
-    std::sort(initiativeOrder.begin(), initiativeOrder.end(),
-              [this](Monster* a, Monster* b) { return GetTurnTracker(*a)->initiative > GetTurnTracker(*b)->initiative; });
+    LOG("Starting round " << m_round);
+    NewRoundPayload payload{};
+    payload.round = m_round;
+    NotifyTurnEvent(TurnEvent::NewRound, &payload);
 
     std::vector<Monster*> enemies;
-    for (auto monster : initiativeOrder) {
-        auto ctx = GetTurnTracker(*monster);
-
-        if (!ctx) {
-            LOG_ERROR("No turn tracker found for monster: " << monster->GetName());
-            continue;
-        }
-
-        for (auto m : initiativeOrder)
-        {
+    for (auto monster : m_turnStatusTracker.GetTurnOrder()) {
+        for (auto m : m_turnStatusTracker.GetTurnOrder()) {
             if (m != monster) enemies.push_back(m);
         }
-
-        Turn(*monster, *ctx, enemies);
+        if (enemies.empty()) {
+            LOG("No enemies found for monster " << monster->GetName() << ", skipping turn.");
+            continue; // No enemies to fight, skip this monster's turn
+        }
+        Turn(*monster, enemies);
 
         enemies.clear(); // Reset enemies for next monster
     }
 }
 
-void CombatSystem::Turn(Monster& monster, TurnTracker& ctx, std::vector<Monster*> enemies) {
-    NotifyTurnEvent(monster, TurnEvent::StartTurn, ctx);
+void CombatSystem::Turn(Monster& monster, std::vector<Monster*> enemies) {
+    MonsterPayload payload{};
+    payload.monster = &monster;
+    NotifyTurnEvent(TurnEvent::StartTurn, &payload);
 
     auto* ai = monster.GetAI();
     if (ai) {
-        ai->TakeTurn(monster, ctx, enemies);
+        ai->TakeTurn(monster, enemies);
     } else {
         LOG_ERROR("Monster " << monster.GetName() << " has no AI assigned.");
     }
-    NotifyTurnEvent(monster, TurnEvent::EndTurn, ctx);
-}
-
-void CombatSystem::TriggerReaction(Monster& self, Monster& other, Reaction& reaction) {
-    // check if self has reaction available
-    TurnTracker* tracker = GetTurnTracker(self);
-    if (tracker && !tracker->resources.reaction) {
-        tracker->resources.reaction = true;
-        reaction.Trigger(self, other, TriggerType::OnAttack);
-        NotifyTurnEvent(self, TurnEvent::AfterAction, *tracker);
-    } else {
-        LOG(self.GetName() << " has already used their reaction this turn.");
-    }
-}
-
-TurnTracker* CombatSystem::GetTurnTracker(Monster& monster) {
-    auto it = m_turnTrackers.find(monster.GetInstanceId());
-    return (it != m_turnTrackers.end()) ? &it->second : nullptr;
+    NotifyTurnEvent(TurnEvent::EndTurn, &payload);
 }
 
 void CombatSystem::AddMonster(MonsterPtr monster, int initiative, Position pos) {
-    m_turnTrackers[monster->GetInstanceId()].self = monster;
-    m_turnTrackers[monster->GetInstanceId()].initiative = initiative;
+    MonsterEnterPayload payload{};
+    payload.monster = monster;
+    payload.spawnPos = pos;
+    payload.round = m_round;
+    payload.initiative = initiative;
+    NotifyTurnEvent(TurnEvent::MonsterEnter, &payload);
+
+    // TODO: instead of using this method use the events system!
     m_battlefield.SetPosition(*monster, pos);
     AddListener(monster);
 }

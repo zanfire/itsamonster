@@ -8,7 +8,7 @@
 
 namespace itsamonster {
 
-void MoveCloseCombatBehaviour::Execute(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) {
+void MoveCloseCombatBehaviour::Execute(Monster& monster, const std::vector<Monster*>& enemies) {
     auto& battlefield = m_system.GetBattlefield();
     auto attackerPos = battlefield.GetPosition(monster.GetInstanceId());
     auto targetPosOpt = battlefield.GetPosition(enemies[0]->GetInstanceId());
@@ -28,44 +28,50 @@ void MoveCloseCombatBehaviour::Execute(Monster& monster, TurnTracker& ctx, const
         LOG("Monster " << monster.GetName() << " is already within close distance of target "  << enemies[0]->GetName());
         return; // Already within close distance
     }
-    // Move towards the closest enemy until within close distance
-    double remaining = static_cast<double>(monster.GetSpeed()) - ctx.resources.movement;
 
-    ctx.resources.movement += battlefield.MoveTowardsInSteps(monster, *targetPosOpt, remaining, m_closeDistance, 5.0);
+    auto& turnStatus = m_system.GetTurnStatusTracker();
+    auto ctx = turnStatus.GetTurnStatus(monster.GetInstanceId());
+    // Move towards the closest enemy until within close distance
+    double remaining = static_cast<double>(monster.GetSpeed()) - ctx->actions.movement;
+    battlefield.MoveTowardsInSteps(monster, *targetPosOpt, remaining, m_closeDistance, 5.0);
 }
 
-void AttackBehaviour::Execute(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) {
+void AttackBehaviour::Execute(Monster& monster, const std::vector<Monster*>& enemies) {
     auto& battlefield = m_system.GetBattlefield();
     auto distance = battlefield.GetDistance(monster.GetInstanceId(), enemies[0]->GetInstanceId());
 
+    MonsterPayload monsterPayload;
+    monsterPayload.monster = &monster;
     auto meleeAttack = monster.GetMeleeAttack();
     if (meleeAttack && distance <= meleeAttack->GetRange()) {
-        m_system.NotifyTurnEvent(monster, TurnEvent::BeforeAction, ctx);
-        meleeAttack->Perform(monster, *enemies[0]);
-        m_system.NotifyTurnEvent(monster, TurnEvent::AfterAction, ctx);
+        if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {
+            meleeAttack->Perform(monster, *enemies[0]);
+        }
+        m_system.NotifyTurnEvent(TurnEvent::AfterAction, &monsterPayload);
     }
     auto rangedAttack = monster.GetRangedAttack();
     if (rangedAttack && distance <= rangedAttack->GetRange())
     {
-        m_system.NotifyTurnEvent(monster, TurnEvent::BeforeAction, ctx);
-        meleeAttack->Perform(monster, *enemies[0]);
-        m_system.NotifyTurnEvent(monster, TurnEvent::AfterAction, ctx);
+        if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {
+            rangedAttack->Perform(monster, *enemies[0]);
+        }
+        m_system.NotifyTurnEvent(TurnEvent::AfterAction, &monsterPayload);
     }
 }
 
-void MeleeApproachAI::TakeTurn(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) {
+void MeleeApproachAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) {
     if (enemies.empty()) {
         LOG_ERROR("No enemies to approach for monster: " << monster.GetName());
         return;
     }
     
-    m_attackBehaviour.Execute(monster, ctx, enemies);
-    m_moveBehaviour.Execute(monster, ctx, enemies);
-    m_attackBehaviour.Execute(monster, ctx, enemies);
+    m_attackBehaviour.Execute(monster, enemies);
+    m_moveBehaviour.Execute(monster, enemies);
+    m_attackBehaviour.Execute(monster, enemies);
 }
 
 
-void RangedKiteAI::TakeTurn(Monster& monster, TurnTracker& ctx, const std::vector<Monster*>& enemies) {
+void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) {
     double remaining = static_cast<double>(monster.GetSpeed());
     auto tpOpt = m_system.GetBattlefield().GetPosition(enemies[0]->GetInstanceId());
     auto spOpt = m_system.GetBattlefield().GetPosition(monster.GetInstanceId());

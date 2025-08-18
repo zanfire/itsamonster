@@ -1,23 +1,23 @@
 #include <gtest/gtest.h>
-#include <gmock/gmock.h>
 
 #include "actions/AttackAction.hpp"
-#include "monsters/Larvae.hpp"
+#include "core/CombatSystem.hpp"
 #include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;
 
 struct TestMonster : public Monster {
-    TestMonster() : Monster("TestMonster", 50, 10, 30, {
+    TestMonster(CombatSystem& system) : Monster(system, "TestMonster", 50, 10, 30, {
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
     void TakeAction(Monster& target) override { /* unused */ }
 };
 
 TEST(AttackActionTest, HitAndMissControlledByDice) {
-    TestMonster attacker;
-    TestMonster target;
-    AttackAction attack("TestAttack", 0, 5, DamageType::Slashing, 100);
+    CombatSystem system;
+    TestMonster attacker(system);
+    TestMonster target(system);
+    AttackAction attack(system, "TestAttack", 0, { std::make_pair(DamageType::Slashing, 5) }, 100);
 
     MockDice mock;
     ScopedDiceOverride scoped(&mock);
