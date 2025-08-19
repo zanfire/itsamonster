@@ -30,35 +30,7 @@ void Monster::SetCondition(Condition condition, int deadline) {
     LOG(m_name << " is set to " << to_string(condition) << " until round " << deadline << " is round " << m_round.rounds);
 }
 
-void Monster::TakeDamage(DamageType type, int damage) {
-    // Allow listeners to modify damage before resistances/vulnerability are applied
-    DamagePayload dmg;
-    dmg.monster = this;
-    dmg.damages.emplace_back(type, damage);
-    dmg.phase = DamagePhase::BeforeApply;
-    m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &dmg);
-
-    if (IsImmune(type)) {
-        damage = 0;
-        LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
-    }
-    if (IsResistant(type)) {
-        damage /= 2;
-        LOG(m_name << " is resistant to " << to_string(type) << ", damage halved to " << damage);
-    }
-    if (IsVulnerable(type)) {
-        damage *= 2;
-        LOG(m_name << " is vulnerable to " << to_string(type) << ", damage doubled to " << damage);
-    }
-    int before = m_hp;
-    auto after = before - damage;
-    LOG("    " << m_name << " takes " << damage << " damage (" << before << " -> " << after << ") " << to_string(type) << "\n");
-    DamagePayload dmgAfter;
-    dmgAfter.monster = this;
-    dmgAfter.damages.emplace_back(type, damage);
-    dmgAfter.phase = DamagePhase::AfterApply;
-    m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &dmgAfter);
-}
+void Monster::TakeDamage(DamageType type, int damage) {}
 
 void Monster::StartTurn(int round)  {
     m_round = {};

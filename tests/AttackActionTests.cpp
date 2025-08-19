@@ -10,7 +10,6 @@ struct TestMonster : public Monster {
     TestMonster(CombatSystem& system) : Monster(system, "TestMonster", 50, 10, 30, {
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
-    void TakeAction(Monster& target) override { /* unused */ }
 };
 
 TEST(AttackActionTest, HitAndMissControlledByDice) {

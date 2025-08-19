@@ -87,8 +87,6 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
     } else if (d > m_maxPreferred) {
         m_system.GetBattlefield().MoveTowardsInSteps(monster, tp, remaining, m_maxPreferred, 5.0);
     }
-
-    monster.TakeAction(*enemies[0]);
 }
 
 } // namespace itsamonster

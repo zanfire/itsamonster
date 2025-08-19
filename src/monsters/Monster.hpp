@@ -62,7 +62,6 @@ public:
     virtual bool IsCondition(Condition condition) const;
     virtual void SetCondition(Condition condition, int duration);
     virtual bool SavingThrow(Ability stat, int DC);
-    virtual void TakeAction(Monster& target) = 0;
     // Strategy hook: by default, CombatSystem will call the AI strategy if one is attached.
     // Monsters can still override TakeAction to define their attacks.
     virtual void TakeDamage(DamageType type, int damage);

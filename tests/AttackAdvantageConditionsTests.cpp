@@ -13,7 +13,6 @@ struct DummyMonster : public Monster {
         : Monster(system, name, /*hp*/100, /*ac*/ac, /*speed*/30, {
             std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
             std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
-    void TakeAction(Monster&) override {}
 };
 
 // Helper to build a basic melee and ranged attack

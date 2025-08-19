@@ -21,10 +21,6 @@ struct Larvae : public Monster {
             std::make_pair(2, -4)
         }), m_bite(system) {}
 
-    void TakeAction(Monster& target) override {
-        m_bite.Perform(*this, target);
-    }
-
     bool IsResistant(DamageType damageType) const override {
         if (damageType == DamageType::Piercing) return true;
         return Monster::IsResistant(damageType);

@@ -31,10 +31,6 @@ struct AwakenedPlants : public Monster {
         return &m_rake;
     }
 
-    void TakeAction(Monster& target) override {
-        m_rake.Perform(*this, target);
-    }
-
     bool IsResistant(DamageType damageType) const override {
         if (damageType == DamageType::Piercing) return true;
         return Monster::IsResistant(damageType);
