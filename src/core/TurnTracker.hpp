@@ -20,6 +20,7 @@ struct TurnStatus {
     int round{ 0 };
     int initiative{ 0 };
     int damageTaken{ 0 };
+    bool dead{ false };
     /// @brief Pointer (not owning) to the monster whose turn is being tracked.
     Monster* self{ nullptr };
     TurnAction actions{};

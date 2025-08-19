@@ -27,8 +27,12 @@ bool TurnStatusTracker::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
     if (ev == TurnEvent::MonsterEnter && dynamic_cast<MonsterEnterPayload*>(payload) != nullptr) {
         auto monsterEnterPayload = dynamic_cast<MonsterEnterPayload*>(payload);
         AddMonster(monsterEnterPayload);
-    } 
-    else if (ev == TurnEvent::MonsterDie || ev == TurnEvent::MonsterLeave) {
+    }
+    else if (ev == TurnEvent::MonsterDie) {
+        // Clean up the turn tracker for the monster
+        GetTurnStatus(monsterPayload->monster->GetInstanceId())->dead = true;
+    }
+    else if (ev == TurnEvent::MonsterLeave) {
         // Clean up the turn tracker for the monster
         m_turnTrackers.erase(monsterPayload->monster->GetInstanceId());
         m_turnOrder.erase(std::remove(m_turnOrder.begin(), m_turnOrder.end(), monsterPayload->monster), m_turnOrder.end());

@@ -33,7 +33,7 @@ protected:
 struct YoungGoldDragon : public Monster {
     BreathWeapon m_breath;
 
-    YoungGoldDragon(CombatSystem& system)
+    explicit YoungGoldDragon(CombatSystem& system)
     : Monster(system, "Young Gold Dragon", 178, 18, 80, {
             std::make_pair(23, 6),
             std::make_pair(14, 6),

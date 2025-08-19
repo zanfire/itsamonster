@@ -14,26 +14,55 @@ void AttackAction::Execute(Monster& attacker, Monster& target) {
         return; // can't attack this action
     }
 
-    Advantage attackAdvantage = Advantage::Normal;
-    if (target.IsCondition(Condition::Blinded)) {
-        attackAdvantage = ResolveAdvantage(attackAdvantage, Advantage::Advantage);
-    }
-    if (attacker.IsCondition(Condition::Blinded)) {
-        attackAdvantage = ResolveAdvantage(attackAdvantage, Advantage::Disadvantage);
+    AttackRollPayload attackRollPayload{};
+    attackRollPayload.monster = &attacker;
+    attackRollPayload.target = &target;
+    attackRollPayload.advantage = HasAdvantage(attacker, target);
+    attackRollPayload.attackRoll = 0; // Will be set after the roll
+    attackRollPayload.ac = target.GetAC();
+    attackRollPayload.phase = Phase::Before;
+    if (!m_system.NotifyTurnEvent(TurnEvent::AttackRoll, &attackRollPayload)) {
+        LOG("Attack roll cancelled by listener.");
+        return; // Cancelled by listener
     }
 
-    int d20 = GetDice().D20(attackAdvantage);
+    int d20 = GetDice().D20(attackRollPayload.advantage);
     int attackResult = d20 + m_attackBonus;
     bool nat20 = (d20 == 20);
     bool nat1 = (d20 == 1);
 
-    bool hit = !nat1 && (nat20 || attackResult >= target.GetAC());
-    LOG("Executing action: " << m_name << " roll=" << d20 << (nat20?"(nat20)":"") << (nat1?"(nat1)":"") << " total=" << attackResult << " vs AC " << target.GetAC() << " " << to_string(attackAdvantage) << " " << (hit?"Hit!":"Miss!"));
-    if (hit) {
+    attackRollPayload.attackRoll = attackResult;
+    attackRollPayload.phase = Phase::After;
+    if (!m_system.NotifyTurnEvent(TurnEvent::AttackRoll, &attackRollPayload)) {
+        LOG("Attack roll cancelled by listener.");
+        return; // Cancelled by listener
+    }
 
-        for (const auto& [type, amount] : m_damage) {
-            target.TakeDamage(type, amount);
+    bool hit = !nat1 && (nat20 || attackRollPayload.attackRoll >= attackRollPayload.ac);
+    LOG("Executing action: " << m_name << " roll=" << d20 << (nat20?"(nat20)":"") << (nat1?"(nat1)":"") << " total=" << attackResult << " vs AC " << target.GetAC() << " " << to_string(attackRollPayload.advantage) << " " << (hit?"Hit!":"Miss!"));
+    if (hit) {
+        if (m_system.NotifyTurnEvent(TurnEvent::OnHit, &attackRollPayload)) {
+            DamagePayload damagePayload{};
+            damagePayload.monster = &target;
+            damagePayload.damages = m_damages;
+            damagePayload.phase = DamagePhase::BeforeApply;
+            if (m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &damagePayload)) {
+                damagePayload.phase = DamagePhase::AfterApply;
+                m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &damagePayload);
+            }
+            else {
+                LOG("Hit cancelled by OnDamageApplied listener.");
+                return; // Cancelled by listener
+            }
         }
+        else {
+            // If any listener returns false, we cancel the hit
+            LOG("Hit cancelled by listener.");
+            return;
+        }
+    }
+    else {
+        m_system.NotifyTurnEvent(TurnEvent::OnMiss, &attackRollPayload);
     }
 }
 

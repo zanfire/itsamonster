@@ -30,8 +30,7 @@ enum class TurnEvent {
     TakeReaction,
     BeforeAction,
     AfterAction,
-    BeforeAttackRoll,
-    AfterAttackRoll,
+    AttackRoll,
     OnHit,
     OnMiss,
     OnDamageApplied,
@@ -58,8 +57,7 @@ inline constexpr std::string_view to_string(TurnEvent ev) noexcept {
         case TurnEvent::TakeReaction:       return "TakeReaction";
         case TurnEvent::BeforeAction:       return "BeforeAction";
         case TurnEvent::AfterAction:        return "AfterAction";
-        case TurnEvent::BeforeAttackRoll:   return "BeforeAttackRoll";
-        case TurnEvent::AfterAttackRoll:    return "AfterAttackRoll";
+        case TurnEvent::AttackRoll:         return "AttackRoll";
         case TurnEvent::OnHit:              return "OnHit";
         case TurnEvent::OnMiss:             return "OnMiss";
         case TurnEvent::OnDamageApplied:    return "OnDamageApplied";
@@ -69,6 +67,8 @@ inline constexpr std::string_view to_string(TurnEvent ev) noexcept {
     }
     return "UnknownTurnEvent";
 }
+
+enum class Phase { Before, After };
 
 /// @brief Base class for event payloads passed through OnTurnEvent.
 /// Listeners can downcast to specific payload types and modify them in-place.
@@ -84,6 +84,14 @@ struct MonsterPayload : public EventPayload {
     MonsterPtr monster{ nullptr }; // Pointer to the monster entering
 };
 
+struct AttackRollPayload : public MonsterPayload {
+    Monster* target{ nullptr }; // Target monster for the attack
+    Advantage advantage{ Advantage::Normal }; // Advantage/Disadvantage state
+    int attackRoll{ 0 }; // Result of the attack roll
+    int ac{ 0 }; // Target's AC for the attack
+    Phase phase{ Phase::Before }; // Phase of the attack roll
+
+};
 
 /// @brief Payload describing damage about to be applied or just applied.
 enum class DamagePhase { BeforeApply, AfterApply };

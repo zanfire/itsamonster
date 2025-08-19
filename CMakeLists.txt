@@ -42,7 +42,6 @@ set(ITSAMONSTER_LIB_SOURCES
     src/monsters/Monster.cpp
     src/monsters/Monster.hpp
     src/monsters/YoungGoldDragon.hpp
-    src/monsters/AcidFiend.hpp
     src/monsters/AwakenedPlants.hpp
     src/monsters/Larvae.hpp
 )

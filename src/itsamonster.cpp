@@ -1,6 +1,5 @@
 
-#include "monsters/YoungGoldDragon.hpp"
-#include "monsters/AcidFiend.hpp"
+#include "monsters/AwakenedPlants.hpp"
 #include "Match.hpp"
 
 #include <iostream>
@@ -10,7 +9,7 @@
 using namespace itsamonster;
 
 int main(int argc, char **argv) {
-    int total_simulations = 1000;
+    int total_simulations = 1;
     unsigned int seed = static_cast<unsigned int>(std::time(nullptr));
     bool in_darkness = false;
     for (int i = 1; i < argc; ++i) {
@@ -35,8 +34,7 @@ int main(int argc, char **argv) {
     }
     std::cout << "Seed: " << seed << "\n";
 
-    //Match<Larvae, AwakenedPlants> match(in_darkness);
-    Match<YoungGoldDragon, AcidFiend> match(in_darkness);
+    Match<AwakenedPlants, AwakenedPlants> match(in_darkness);
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

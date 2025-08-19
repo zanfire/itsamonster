@@ -32,11 +32,13 @@ struct Match {
     }
 
     std::string_view GetMonster1Name() const {
-        MonsterType1 m1;
+        CombatSystem system;
+        MonsterType1 m1(system);
         return m1.GetName();
     }
     std::string_view GetMonster2Name() const {
-        MonsterType2 m2;
+        CombatSystem system;
+        MonsterType2 m2(system);
         return m2.GetName();
     }
     int GetMonster1Wins() const { return m_monsterWin1; }
@@ -59,9 +61,12 @@ struct Match {
             threads.emplace_back([&, i, currentBucketSize]() {
                 InitThreadDice(seed + i);
                 for (int j = 0; j < currentBucketSize; ++j) {
-                    MonsterType1 m1;
-                    MonsterType2 m2;
-                    int rounds = Fight(m1, m2);
+                    CombatSystem system;
+                    MonsterType1 m1(system);
+                    MonsterType2 m2(system);
+                    system.AddMonster(&m1, 20, { 10, 10, 0 });
+                    system.AddMonster(&m2, 10, { 50, 50, 0 });
+                    int rounds = Fight(system, m1, m2);
                     m_totalRounds.fetch_add(rounds, std::memory_order_relaxed);
                 }
             });
@@ -74,53 +79,42 @@ struct Match {
 
 private:
     template<typename MonsterType1, typename MonsterType2>
-    int Fight(MonsterType1 &monster1, MonsterType2 &monster2) {
+    int Fight(CombatSystem& system, MonsterType1 &monster1, MonsterType2 &monster2) {
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
-        if (m_darkness) {
-            LOG("The fight is happening in darkness!");
-            if (!monster1.HasDarkvision()) {
-                LOG("  " << monster1.GetName() << " is blinded by the darkness.");
-                monster1.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
-            }
-            if (!monster2.HasDarkvision()) {
-                LOG("  " << monster2.GetName() << " is blinded by the darkness.");
-                monster2.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
-            }
-        }
-        while (monster1.GetHP() > 0 && monster2.GetHP() > 0) {
+        //if (m_darkness) {
+        //    LOG("The fight is happening in darkness!");
+        //    if (!monster1.HasDarkvision()) {
+        //        LOG("  " << monster1.GetName() << " is blinded by the darkness.");
+        //        monster1.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+        //    }
+        //    if (!monster2.HasDarkvision()) {
+        //        LOG("  " << monster2.GetName() << " is blinded by the darkness.");
+        //        monster2.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+        //    }
+        //}
+        auto& tracker = system.GetTurnStatusTracker();
+        auto* status1 = tracker.GetTurnStatus(monster1.GetInstanceId());
+        auto* status2 = tracker.GetTurnStatus(monster2.GetInstanceId());
+        while (!status1->dead && !status2->dead) {
             if (Logger::Instance().IsVerbose()) {
                 std::cout << "-- Round " << round << " --\n";
-                std::cout << "  Status: " << monster1.GetName() << " HP=" << monster1.GetHP() << " | "
-                          << monster2.GetName() << " HP=" << monster2.GetHP() << "\n";
+                std::cout << "  Status: " << monster1.GetName() << " HP=" << (monster1.GetHP() - status1->damageTaken) << " | "
+                          << monster2.GetName() << " HP=" << (monster2.GetHP() - status2->damageTaken) << "\n";
                 std::cout << "  " << monster1.GetName() << " acts\n";
             }
-            monster1.StartTurn(round);
-            // Move towards if out of melee range (simplistic AI placeholder)
-            //double rem1 = monster1.GetRemainingMovement();
-            //monster1.MoveTowards(monster2, rem1);
-            monster1.TakeAction(monster2);
-            monster1.EndTurn();
-            if (monster2.GetHP() <= 0) break;
-            LOG("  " << monster2.GetName() << " acts\n");
-            monster2.StartTurn(round);
-            //double rem2 = monster2.GetRemainingMovement();
-            //monster2.MoveTowards(monster1, rem2);
-            monster2.TakeAction(monster1);
-            monster2.EndTurn();
-
-            if (monster1.GetHP() <= 0 || monster2.GetHP() <= 0) break;
-            ++round;
+            
+            system.Round();
 
             LOG("--- Round ended ---");
             LOG("");
         }
-        if (monster1.GetHP() > 0) {
+        if (status1->dead) {
             m_monsterWin1++;
         } else {
             m_monsterWin2++;
         }
-        if (monster1.GetHP() > 0) {
+        if (status1->dead) {
             LOG("Winner: " << monster1.GetName() << " after " << round << " rounds");
         } else {
             LOG("Winner: " << monster2.GetName() << " after " << round << " rounds");

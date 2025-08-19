@@ -5,7 +5,7 @@
 namespace itsamonster {
 struct AttackAction : public Action {
     AttackAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range)
-        : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damage(std::move(damage)), m_range(range) {}
+        : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damages(std::move(damage)), m_range(range) {}
     ~AttackAction() override = default;
 
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const override;
@@ -19,7 +19,7 @@ protected:
     CombatSystem& m_system;
     std::string_view m_name;
     int m_attackBonus;
-    std::vector<std::pair<DamageType, int>> m_damage;
+    std::vector<std::pair<DamageType, int>> m_damages;
     int m_range;
 };
 
