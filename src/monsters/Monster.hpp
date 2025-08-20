@@ -19,9 +19,6 @@ namespace itsamonster {
 
 using MonsterPtr = Monster*;
 
-
-using ConditionTracker = std::array<int, static_cast<size_t>(Condition::Count)>; // Track conditions using bitmask
-
 struct RoundTracker {
     int rounds{ 0 };
     bool reaction{ false };
@@ -66,9 +63,8 @@ public:
     // Monsters can still override TakeAction to define their attacks.
     virtual void TakeDamage(DamageType type, int damage);
     virtual void TakeReaction(Monster& attacker, int damage, bool ishit) {}
-    virtual void StartTurn(int round);
-    virtual void EndTurn();
 
+    virtual bool IsImmune(Condition condition) const { return false; }
     virtual bool IsImmune(DamageType type) const { return false; }
     virtual bool IsVulnerable(DamageType type) const { return false; }
     virtual bool IsResistant(DamageType type) const { return false; }
@@ -81,6 +77,7 @@ private:
     bool OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) override;
     bool OnTurnEvent(TurnEvent ev, EventPayload* payload) override;
 
+    bool OnApplyCondition(ConditionEventPayload* payload);
     bool OnDamageApplied(DamagePayload* payload);
 private:
     std::string_view m_name;
@@ -91,7 +88,6 @@ private:
     int m_flySpeed{ 0 }; // feet per round, if applicable
     bool m_hover{ false }; // true if the monster can hover (e.g. flying creatures)
     std::array<std::pair<int, int>, 6> m_stats{};
-    ConditionTracker m_conditions{};
 protected:
     RoundTracker m_round{};
     std::shared_ptr<struct Strategy> m_ai{};

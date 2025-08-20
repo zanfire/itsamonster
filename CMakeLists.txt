@@ -44,6 +44,8 @@ set(ITSAMONSTER_LIB_SOURCES
     src/monsters/YoungGoldDragon.hpp
     src/monsters/AwakenedPlants.hpp
     src/monsters/Larvae.hpp
+    src/monsters/FrogWarrior.hpp
+    src/monsters/FishWarrior.hpp
 )
 
 add_library(itsamonster_lib ${ITSAMONSTER_LIB_SOURCES})

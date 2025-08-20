@@ -2,6 +2,8 @@
 
 #include "TurnEvent.hpp"
 
+#include <array>
+
 namespace itsamonster {
 
 struct Monster;
@@ -15,6 +17,8 @@ struct TurnAction {
     double movement{ 0 }; // Movement used this turn
 };
 
+using ConditionTracker = std::array<int, static_cast<size_t>(Condition::Count)>; // Track conditions using bitmask
+
 /// @brief Tracks the state of a monster's turn.
 struct TurnStatus {
     int round{ 0 };
@@ -24,6 +28,8 @@ struct TurnStatus {
     /// @brief Pointer (not owning) to the monster whose turn is being tracked.
     Monster* self{ nullptr };
     TurnAction actions{};
+    ConditionTracker conditions{};
+
 };
 
 /// @brief Manages the turn-based system for monsters.
@@ -52,9 +58,12 @@ public:
 private:
     void AddMonster(MonsterEnterPayload* payload);
     bool TrackDamage(DamagePayload* payload);
+    bool TrackCondition(ConditionEventPayload* payload);
+    bool TrackStartTurn(MonsterPayload* payload);
+    bool TrackEndTurn(MonsterPayload* payload);
 private:
     std::map<MonsterInstanceId, TurnStatus> m_turnTrackers;
     std::vector<MonsterPtr> m_turnOrder; // Sorted by initiative
-    class CombatSystem& m_combatSystem;
+    class CombatSystem& m_system;
 };
 } // namespace itsamonster

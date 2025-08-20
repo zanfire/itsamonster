@@ -1,5 +1,6 @@
 
-#include "monsters/AwakenedPlants.hpp"
+#include "monsters/FrogWarrior.hpp"
+#include "monsters/FishWarrior.hpp"
 #include "Match.hpp"
 
 #include <iostream>
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
     }
     std::cout << "Seed: " << seed << "\n";
 
-    Match<AwakenedPlants, AwakenedPlants> match(in_darkness);
+    Match<FrogWarrior, FishWarrior> match(in_darkness);
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

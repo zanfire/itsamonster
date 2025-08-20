@@ -61,11 +61,11 @@ struct Match {
             threads.emplace_back([&, i, currentBucketSize]() {
                 InitThreadDice(seed + i);
                 for (int j = 0; j < currentBucketSize; ++j) {
-                    CombatSystem system;
+                    CombatSystem system(250, 250);
                     MonsterType1 m1(system);
                     MonsterType2 m2(system);
-                    system.AddMonster(&m1, 20, { 10, 10, 0 });
-                    system.AddMonster(&m2, 10, { 50, 50, 0 });
+                    system.AddMonster(&m1, 20, { 40, 175, 0 });
+                    system.AddMonster(&m2, 10, { 30, 100, 0 });
                     int rounds = Fight(system, m1, m2);
                     m_totalRounds.fetch_add(rounds, std::memory_order_relaxed);
                 }
@@ -82,17 +82,17 @@ private:
     int Fight(CombatSystem& system, MonsterType1 &monster1, MonsterType2 &monster2) {
         int round = 1;
         LOG("=== New Fight: " << monster1.GetName() << " vs " << monster2.GetName() << " ===");
-        //if (m_darkness) {
-        //    LOG("The fight is happening in darkness!");
-        //    if (!monster1.HasDarkvision()) {
-        //        LOG("  " << monster1.GetName() << " is blinded by the darkness.");
-        //        monster1.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
-        //    }
-        //    if (!monster2.HasDarkvision()) {
-        //        LOG("  " << monster2.GetName() << " is blinded by the darkness.");
-        //        monster2.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
-        //    }
-        //}
+        if (m_darkness) {
+            LOG("The fight is happening in darkness!");
+            if (!monster1.HasDarkvision()) {
+                LOG("  " << monster1.GetName() << " is blinded by the darkness.");
+                monster1.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+            }
+            if (!monster2.HasDarkvision()) {
+                LOG("  " << monster2.GetName() << " is blinded by the darkness.");
+                monster2.SetCondition(Condition::Blinded,  std::numeric_limits<int>::max());
+            }
+        }
         auto& tracker = system.GetTurnStatusTracker();
         auto* status1 = tracker.GetTurnStatus(monster1.GetInstanceId());
         auto* status2 = tracker.GetTurnStatus(monster2.GetInstanceId());
@@ -105,6 +105,7 @@ private:
             }
             
             system.Round();
+            round = system.GetCurrentRound();
 
             LOG("--- Round ended ---");
             LOG("");

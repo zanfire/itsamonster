@@ -1,6 +1,7 @@
 #include "Monster.hpp"
 
 #include "core/CombatSystem.hpp"
+#include "core/TurnTracker.hpp"
 #include <iomanip>
 
 using namespace itsamonster;
@@ -11,7 +12,31 @@ std::atomic<MonsterInstanceId> Monster::s_nextId{ 0 };
 Monster::~Monster() = default;
 
 bool Monster::IsCondition(Condition condition) const {
-    return m_conditions[int(condition)] > 0;
+    if (auto status = m_system.GetTurnStatusTracker().GetTurnStatus(GetInstanceId())) {
+        // Check if the condition is active
+        return status->conditions[int(condition)] > 0;
+    }
+    return false;
+}
+void Monster::SetCondition(Condition condition, int duration) {
+    if (duration <= 0) {
+        LOG(m_name << " tried to set condition " << to_string(condition) << " with non-positive duration, ignoring.");
+        return; // Invalid duration
+    }
+    ConditionEventPayload payload{};
+    payload.monster = this;
+    payload.condition = condition;
+    payload.phase = Phase::Before;
+    payload.duration = duration;
+    if (m_system.NotifyTurnEvent(TurnEvent::OnApplyCondition, &payload)) {
+        payload.phase = Phase::After;
+        // Only apply condition if the Before phase was accepted
+        m_system.NotifyTurnEvent(TurnEvent::OnApplyCondition, &payload);
+        LOG(m_name << " applied condition " << to_string(condition) << " for " << duration << " rounds.");
+    } else {
+        LOG(m_name << " failed to apply condition " << to_string(condition) << ", cancelled by listener.");
+        return; // Cancelled by listener
+    }
 }
 
 bool Monster::SavingThrow(Ability stat, int DC) {
@@ -25,28 +50,7 @@ bool Monster::SavingThrow(Ability stat, int DC) {
     return false;
 }
 
-void Monster::SetCondition(Condition condition, int deadline) {
-    m_conditions[int(condition)] = deadline;
-    LOG(m_name << " is set to " << to_string(condition) << " until round " << deadline << " is round " << m_round.rounds);
-}
-
 void Monster::TakeDamage(DamageType type, int damage) {}
-
-void Monster::StartTurn(int round)  {
-    m_round = {};
-    m_round.rounds = round;
-}
-
-void Monster::EndTurn() {
-    int condition = 0;
-    for (auto &deadline : m_conditions) {
-        if (deadline <= m_round.rounds && deadline != 0) {
-            LOG(m_name << " condition " << to_string(static_cast<Condition>(condition)) << " has ended.");
-            deadline = 0; // Remove expired condition
-        }
-        ++condition;
-    }
-}
 
 bool Monster::OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
     if (&monster != this) return true;
@@ -74,11 +78,33 @@ bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
         LOG(monsterPayload->monster->GetName() << " has completed their action.");
         break;
     case TurnEvent::OnDamageApplied:
+    {
         auto dmgPayload = dynamic_cast<DamagePayload*>(payload);
         if (dmgPayload) {
-            OnDamageApplied(dmgPayload);
+            return OnDamageApplied(dmgPayload);
         }
         break;
+    }
+    case TurnEvent::OnApplyCondition:
+        return OnApplyCondition(dynamic_cast<ConditionEventPayload*>(payload));
+        break;
+    }
+    return true;
+}
+
+bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
+    if (payload == nullptr) {
+        LOG(m_name << " received null condition payload, ignoring.");
+        return true; // Nothing to do
+    }
+    if (payload->monster != this) return true; // Not our condition
+    if (payload->phase == Phase::Before) {
+        LOG(m_name << " is about to apply condition " << to_string(payload->condition)
+            << " for " << payload->duration << " rounds.");
+        if (IsImmune(payload->condition)) {
+            LOG(m_name << " is immune to " << to_string(payload->condition) << ", condition not applied.");
+            return false; // Skip applying condition
+        }
     }
     return true;
 }

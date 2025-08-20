@@ -119,6 +119,12 @@ struct MonsterEnterPayload : public MonsterPayload {
     int initiative{ 0 };           // Initiative value for sorting
 };
 
+struct ConditionEventPayload : public MonsterPayload {
+    Condition condition{};         // Condition being applied or removed
+    int duration{ 0 };             // Duration in rounds, modifiable by listeners
+    Phase phase{ Phase::Before };  // Phase of the condition event
+};
+
 struct TurnEventListener {
     virtual ~TurnEventListener() = default;
     virtual bool OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) { return true; }

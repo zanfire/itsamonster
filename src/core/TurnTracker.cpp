@@ -15,7 +15,7 @@ using namespace itsamonster;
     TurnStatus& tracker = it->second;
 
 TurnStatusTracker::TurnStatusTracker(CombatSystem& combatSystem)
-    : m_combatSystem(combatSystem) {
+    : m_system(combatSystem) {
 }
 
 TurnStatusTracker::~TurnStatusTracker() {
@@ -40,17 +40,15 @@ bool TurnStatusTracker::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
     else if (ev == TurnEvent::NewRound) {
         // Reset round state for all monsters
         for (auto& [id, tracker] : m_turnTrackers) {
-            tracker.round = m_combatSystem.GetCurrentRound();
+            tracker.round = m_system.GetCurrentRound();
             tracker.actions = TurnAction{};
         }
     } 
     else if (ev == TurnEvent::StartTurn) {
-        auto it = m_turnTrackers.find(monsterPayload->monster->GetInstanceId());
-        if (it == m_turnTrackers.end()) {
-            // If the monster is not tracked, we can't proceed
-            return false;
-        }
-        it->second.actions = TurnAction{};
+        return TrackStartTurn(monsterPayload);
+    }
+    else if (ev == TurnEvent::EndTurn) {
+        return TrackEndTurn(monsterPayload);
     }
     else if (ev == TurnEvent::TakeAction)
     {
@@ -102,6 +100,10 @@ bool TurnStatusTracker::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
             it->second.actions.movement += distanceMoved;
         }
     }
+    else if (ev == TurnEvent::OnApplyCondition)
+    {
+        return TrackCondition(dynamic_cast<ConditionEventPayload*>(payload));
+    }
     else if (ev == TurnEvent::OnDamageApplied) {
         auto dmgPayload = dynamic_cast<DamagePayload*>(payload);
         if (dmgPayload == nullptr) {
@@ -133,6 +135,39 @@ void TurnStatusTracker::AddMonster(MonsterEnterPayload* payload) {
     LOG("New monster " << payload->monster->GetName() << " tracked");
 }
 
+bool TurnStatusTracker::TrackCondition(ConditionEventPayload* payload) {
+    auto monster = payload->monster;
+    if (auto status = GetTurnStatus(monster->GetInstanceId())) {
+        if (payload->phase == Phase::After) {
+            status->conditions[static_cast<size_t>(payload->condition)] = payload->duration;
+        }
+    }
+    return true;
+}
+
+bool TurnStatusTracker::TrackStartTurn(MonsterPayload* payload) {
+    auto monster = payload->monster;
+    if (auto status = GetTurnStatus(monster->GetInstanceId())) {
+        status->actions = TurnAction{};
+        status->round = m_system.GetCurrentRound();
+    }
+    return true;
+}
+bool TurnStatusTracker::TrackEndTurn(MonsterPayload* payload) {
+    auto monster = payload->monster;
+    if (auto status = GetTurnStatus(monster->GetInstanceId())) {
+        int condition = 0;
+        for (auto& deadline : status->conditions) {
+            if (deadline <= m_system.GetCurrentRound() && deadline != 0) {
+                LOG(monster->GetName() << " condition " << to_string(static_cast<Condition>(condition)) << " has ended.");
+                deadline = 0; // Remove expired condition
+            }
+            ++condition;
+        }
+    }
+    return true;
+}
+
 bool TurnStatusTracker::TrackDamage(DamagePayload* payload) {
     auto monster = payload->monster;
     if (auto status = GetTurnStatus(monster->GetInstanceId())) {
@@ -157,7 +192,7 @@ bool TurnStatusTracker::TrackDamage(DamagePayload* payload) {
         status->damageTaken += amount;
 
         if (status->damageTaken >= monster->GetHP()) {
-            m_combatSystem.NotifyTurnEvent(TurnEvent::MonsterDie, payload);
+            m_system.NotifyTurnEvent(TurnEvent::MonsterDie, payload);
             // If the monster has taken enough damage to die, we can remove it fro
             LOG(monster->GetName() << " has died.");
         }
