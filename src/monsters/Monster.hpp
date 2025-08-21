@@ -89,7 +89,6 @@ private:
     bool m_hover{ false }; // true if the monster can hover (e.g. flying creatures)
     std::array<std::pair<int, int>, 6> m_stats{};
 protected:
-    RoundTracker m_round{};
     std::shared_ptr<struct Strategy> m_ai{};
     CombatSystem& m_system;
 
