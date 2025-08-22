@@ -14,7 +14,6 @@ struct Strategy {
     virtual ~Strategy() = default;
     // Execute movement and action selection for this turn against target
     virtual void TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) = 0;
-
 protected:
     CombatSystem& m_system;
 };

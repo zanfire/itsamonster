@@ -5,6 +5,15 @@
 using namespace itsamonster;
 
 void AttackAction::Execute(Monster& attacker, Monster& target) {
+    for (int i = 0; i < m_multiAttackCount; ++i) {
+        if (m_multiAttackCount > 1) {
+            LOG(attacker.GetName() << " execute multi-attack " << (i + 1) << "/" << m_multiAttackCount);
+        }
+        ExecuteSingleAttack(attacker, target);
+    }
+}
+
+void AttackAction::ExecuteSingleAttack(Monster& attacker, Monster& target) {
     if (attacker.IsCondition(Condition::Incapacitated)) {
         LOG(attacker.GetName() << " is incapacitated and cannot take actions!");
         return;
@@ -71,6 +80,12 @@ bool AttackAction::IsInRange(const Monster& attacker, const Monster& target) con
     return distance <= m_range;
 }
 
+bool AttackRangedAction::IsInRange(const Monster& attacker, const Monster& target) const {
+    double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+    return distance <= m_maxRange;
+}
+
+
 Advantage AttackAction::HasAdvantage(const Monster& attacker, const Monster& target) const {
     Advantage adv = Advantage::Normal;
     if (attacker.IsCondition(Condition::Blinded)) {
@@ -135,6 +150,10 @@ Advantage AttackRangedAction::HasAdvantage(const Monster& attacker, const Monste
     double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
     if (distance <= 5.0 && !attacker.IsCondition(Condition::Incapacitated)) {
         adv = ResolveAdvantage(adv, Advantage::Disadvantage); // close range, disadvantage
+    }
+    if (distance > m_range && distance <= m_maxRange) {
+        LOG(attacker.GetName() << " is out of normal range for " << m_name << " (max range " << m_maxRange << "), disadvantage");
+        adv = Advantage::Disadvantage; // Out of range, no advantage
     }
     return adv;
 }

@@ -129,10 +129,12 @@ std::optional<Position> Battlefield::GetPosition(MonsterInstanceId monster) cons
 }
 
 void Battlefield::SetDarkness(bool darkness) {
-    auto monsters = m_system.GetTurnStatusTracker().GetTurnOrder();
-    for (auto& monster : monsters) {
-        if (monster && !monster->HasDarkvision()) {
-            monster->SetCondition(Condition::Blinded, std::numeric_limits<int>::max());
+    if (darkness) {
+        auto monsters = m_system.GetTurnStatusTracker().GetTurnOrder();
+        for (auto& monster : monsters) {
+            if (monster && !monster->HasDarkvision()) {
+                monster->SetCondition(Condition::Blinded, std::numeric_limits<int>::max());
+            }
         }
     }
 }

@@ -1,0 +1,50 @@
+#pragma once
+
+#include "Monster.hpp"
+#include "actions/AttackAction.hpp"
+#include "core/Strategy.hpp"
+
+namespace itsamonster {
+
+    struct MermaidWarrior : public Monster {
+
+        struct Melee : public AttackMeleeAction {
+            Melee(CombatSystem& system) : AttackMeleeAction(system, "Spear", 2, { std::make_pair(DamageType::Piercing, 3), std::make_pair(DamageType::Cold, 2) }, 5) {}
+            ~Melee() override = default;
+        };
+
+        struct Ranged : public AttackRangedAction {
+            Ranged(CombatSystem& system) : AttackRangedAction(system, "Trident", 2, { std::make_pair(DamageType::Piercing, 3), std::make_pair(DamageType::Cold, 2) }, 20, 60) {}
+            ~Ranged() override = default;
+        };
+
+        MermaidWarrior(CombatSystem& system)
+            : Monster(system, "Mermaid Warrior", 11, 11, 40, {
+                    std::make_pair(13, 1),
+                    std::make_pair(10, 0),
+                    std::make_pair(11, 0),
+                    std::make_pair(11, 0),
+                    std::make_pair(10, 0),
+                    std::make_pair(8, -1)
+                }), m_attack(system), m_ranged(system) {
+            std::unique_ptr<MeleeApproachAI> ai = std::make_unique<MeleeApproachAI>(system, 5.0);
+
+            SetAI(std::move(ai));
+        }
+
+        AttackMeleeAction* GetMeleeAttack() override {
+            return &m_attack;
+        }
+
+        AttackRangedAction* GetRangedAttack() override {
+            return &m_ranged;
+        }
+
+        virtual bool HasDarkvision() const { return false; }
+
+    private:
+        Melee m_attack;
+        Ranged m_ranged;
+    };
+
+} // namespace itsamonster

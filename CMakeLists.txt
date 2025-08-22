@@ -17,7 +17,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Explicit source list (core library sources excluding main)
 set(ITSAMONSTER_LIB_SOURCES
     src/Logger.cpp
-    src/Match.cpp
     src/Match.hpp
     src/Types.hpp
     src/actions/Action.cpp
@@ -46,6 +45,8 @@ set(ITSAMONSTER_LIB_SOURCES
     src/monsters/Larvae.hpp
     src/monsters/FrogWarrior.hpp
     src/monsters/FishWarrior.hpp
+    src/monsters/MermaidWarrior.hpp
+    src/monsters/SharkyWarrior.hpp
 )
 
 add_library(itsamonster_lib ${ITSAMONSTER_LIB_SOURCES})

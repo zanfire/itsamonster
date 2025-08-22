@@ -1,6 +1,6 @@
 
-#include "monsters/FrogWarrior.hpp"
-#include "monsters/FishWarrior.hpp"
+#include "monsters/MermaidWarrior.hpp"
+#include "monsters/SharkyWarrior.hpp"
 #include "Match.hpp"
 
 #include <iostream>
@@ -35,8 +35,8 @@ int main(int argc, char **argv) {
     }
     std::cout << "Seed: " << seed << "\n";
 
-    using TeamFrogs = std::array<FrogWarrior, 2>;
-    using TeamFish = std::array<FishWarrior, 1>;
+    using TeamFrogs = std::array<MermaidWarrior, 2>;
+    using TeamFish = std::array<SharkyWarrior, 1>;
     Match<TeamFrogs, TeamFish> match(in_darkness);
     match.Go(total_simulations, seed);
 

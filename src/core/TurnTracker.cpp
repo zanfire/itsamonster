@@ -172,7 +172,6 @@ bool TurnStatusTracker::TrackEndTurn(MonsterPayload* payload) {
 bool TurnStatusTracker::TrackDamage(DamagePayload* payload) {
     auto monster = payload->monster;
     if (auto status = GetTurnStatus(monster->GetInstanceId())) {
-
         if (payload->phase != DamagePhase::AfterApply) {
             return true;
         }
@@ -189,7 +188,7 @@ bool TurnStatusTracker::TrackDamage(DamagePayload* payload) {
             });
         int before = monster->GetHP() - status->damageTaken;
         auto after = before - amount;
-        LOG(monster->GetName() << " takes " << amount << " damage (" << before << " -> " << after << ") " << damageTypesStr << "\n");
+        LOG(monster->GetName() << " takes " << amount << " damage (" << before << " -> " << after << ") " << damageTypesStr);
         status->damageTaken += amount;
 
         if (status->damageTaken >= monster->GetHP()) {

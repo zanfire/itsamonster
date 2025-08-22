@@ -13,8 +13,6 @@ struct Action {
 
     virtual bool IsInRange(const Monster& attacker, const Monster& target) const = 0;
 
-    bool CanAttack(const Monster& attacker, const Monster& target) const;
-
 protected:
     virtual void Execute(Monster& attacker, Monster& target) = 0;
 };

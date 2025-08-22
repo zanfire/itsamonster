@@ -16,7 +16,7 @@ TEST(AttackActionTest, HitAndMissControlledByDice) {
     CombatSystem system;
     TestMonster attacker(system);
     TestMonster target(system);
-    AttackAction attack(system, "TestAttack", 0, { std::make_pair(DamageType::Slashing, 5) }, 100);
+    AttackAction attack(system, "TestAttack", 0, { std::make_pair(DamageType::Slashing, 5) }, 100, 1);
 
     MockDice mock;
     ScopedDiceOverride scoped(&mock);
