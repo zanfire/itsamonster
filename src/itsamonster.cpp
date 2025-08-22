@@ -35,7 +35,9 @@ int main(int argc, char **argv) {
     }
     std::cout << "Seed: " << seed << "\n";
 
-    Match<FrogWarrior, FishWarrior> match(in_darkness);
+    using TeamFrogs = std::array<FrogWarrior, 2>;
+    using TeamFish = std::array<FishWarrior, 1>;
+    Match<TeamFrogs, TeamFish> match(in_darkness);
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

@@ -5,6 +5,17 @@
 
 using namespace itsamonster;
 
+
+bool Battlefield::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
+    auto monsterPayload = dynamic_cast<MonsterPayload*>(payload);
+
+    if (ev == TurnEvent::MonsterEnter && dynamic_cast<MonsterEnterPayload*>(payload) != nullptr) {
+        auto monsterEnterPayload = dynamic_cast<MonsterEnterPayload*>(payload);
+        SetPosition(*monsterEnterPayload->monster, monsterEnterPayload->spawnPos);
+    }
+    return true;
+}
+
 double Battlefield::MoveTowardsInSteps(Monster& mover,
                             const Position& targetPos,
                             double& remainingSpeed,
@@ -115,4 +126,13 @@ std::optional<Position> Battlefield::GetPosition(MonsterInstanceId monster) cons
         return it->second;
     }
     return std::nullopt; // Default position if not found
+}
+
+void Battlefield::SetDarkness(bool darkness) {
+    auto monsters = m_system.GetTurnStatusTracker().GetTurnOrder();
+    for (auto& monster : monsters) {
+        if (monster && !monster->HasDarkvision()) {
+            monster->SetCondition(Condition::Blinded, std::numeric_limits<int>::max());
+        }
+    }
 }

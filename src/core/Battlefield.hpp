@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Types.hpp"
+#include "TurnEvent.hpp"
 
 #include <cmath>
 #include <map>
@@ -10,22 +11,11 @@ namespace itsamonster {
 
 class CombatSystem;
 
-struct Position {
-    int x{0};
-    int y{0};
-    int z{0}; // Optional, for 3D support
 
-    double DistanceTo(const Position &other) const {
-        int dx = x - other.x;
-        int dy = y - other.y;
-        int dz = z - other.z;
-        return std::sqrt(static_cast<double>(dx*dx + dy*dy + dz*dz));
-    }
-};
 
 class Monster; // forward declaration
 
-class Battlefield {
+class Battlefield : public TurnEventListener {
 public:
     Battlefield(CombatSystem& system, int w, int h) : m_system(system), m_width(w), m_height(h) {}
 
@@ -51,11 +41,16 @@ public:
 
     void SetPosition(Monster& monster, Position p);
     std::optional<Position> GetPosition(MonsterInstanceId monster) const;
+
+    void SetDarkness(bool darkness);
+
+    bool OnTurnEvent(TurnEvent ev, EventPayload* payload);
 private:
     CombatSystem& m_system;
     std::map<MonsterInstanceId, Position> m_positions; // Track monster positions
     int m_width;
     int m_height;
+    bool m_darkness{ false }; // Whether the battlefield is in darkness, affecting visibility
 };
 
 } // namespace itsamonster

@@ -26,9 +26,11 @@ public:
     CombatSystem(int width = 100, int height = 100)
         : m_battlefield(*this, width, height), m_turnStatusTracker(*this) {
         AddListener(&m_turnStatusTracker);
+        AddListener(&m_battlefield);
     }
     ~CombatSystem() {
         RemoveListener(&m_turnStatusTracker);
+        RemoveListener(&m_battlefield);
     }
 
     // Non-copyable, non-movable
@@ -37,7 +39,7 @@ public:
     CombatSystem(CombatSystem&&) = delete;
     CombatSystem& operator=(CombatSystem&&) = delete;
 
-    void AddMonster(MonsterPtr monster, int initiative, Position pos);
+    void AddMonster(MonsterPtr monster, int initiative, Position pos, int faction);
     Battlefield& GetBattlefield() { return m_battlefield; }
     TurnStatusTracker& GetTurnStatusTracker() { return m_turnStatusTracker; }
 
@@ -50,7 +52,6 @@ public:
     void Round();
 
     int GetCurrentRound() const { return m_round;}
-
 private:
     void Turn(Monster& monster, std::vector<Monster*> enemies);
 private:
@@ -58,5 +59,6 @@ private:
     TurnStatusTracker m_turnStatusTracker;
     std::vector<TurnEventListener*> m_listeners;
     int m_round{ 0 };
+    std::map<MonsterInstanceId, std::vector<Monster*>> m_enemies; // Enemies by monster ID
 };
 } // namespace itsamonster

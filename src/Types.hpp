@@ -171,4 +171,17 @@ inline Advantage ResolveAdvantage(Advantage current, Advantage target) {
     return current;
 }
 
+struct Position {
+    int x{0};
+    int y{0};
+    int z{0}; // Optional, for 3D support
+
+    double DistanceTo(const Position &other) const {
+        int dx = x - other.x;
+        int dy = y - other.y;
+        int dz = z - other.z;
+        return std::sqrt(static_cast<double>(dx*dx + dy*dy + dz*dz));
+    }
+};
+
 } // namespace itsamonster

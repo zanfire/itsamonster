@@ -21,8 +21,8 @@ TEST(CombatSystem, Test1) {
     AwakenedPlants attacker(system);
     AwakenedPlants defender(system);    // has OA reaction
 
-    system.AddMonster(&attacker, 19, { 0, 0, 0});
-    system.AddMonster(&defender, 20, { 60, 60, 0 });
+    system.AddMonster(&attacker, 19, { 0, 0, 0}, 1);
+    system.AddMonster(&defender, 20, { 60, 60, 0 }, 2);
 
     // Register participants in the round so CombatSystem can map trackers
     std::array<MonsterPtr, 2> order{ &attacker, &defender };

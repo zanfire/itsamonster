@@ -35,24 +35,26 @@ bool CombatSystem::NotifyTurnEvent(TurnEvent ev, EventPayload* payload) {
 }
 
 void CombatSystem::Round() {
+    if (m_enemies.empty()) {
+        for (auto monster : m_turnStatusTracker.GetTurnOrder()) {
+            auto attackerStatus = m_turnStatusTracker.GetTurnStatus(monster->GetInstanceId());
+            std::vector<Monster*> enemies;
+            for (auto m : m_turnStatusTracker.GetTurnOrder()) {
+                auto status = m_turnStatusTracker.GetTurnStatus(m->GetInstanceId());
+                if (m != monster && status->faction != attackerStatus->faction) enemies.push_back(m);
+            }
+            m_enemies[monster->GetInstanceId()] = std::move(enemies);
+        }
+    }
+
     m_round++;
     LOG("Starting round " << m_round);
     NewRoundPayload payload{};
     payload.round = m_round;
     NotifyTurnEvent(TurnEvent::NewRound, &payload);
 
-    std::vector<Monster*> enemies;
     for (auto monster : m_turnStatusTracker.GetTurnOrder()) {
-        for (auto m : m_turnStatusTracker.GetTurnOrder()) {
-            if (m != monster) enemies.push_back(m);
-        }
-        if (enemies.empty()) {
-            LOG("No enemies found for monster " << monster->GetName() << ", skipping turn.");
-            continue; // No enemies to fight, skip this monster's turn
-        }
-        Turn(*monster, enemies);
-
-        enemies.clear(); // Reset enemies for next monster
+        Turn(*monster, m_enemies[monster->GetInstanceId()]);
     }
 }
 
@@ -70,15 +72,14 @@ void CombatSystem::Turn(Monster& monster, std::vector<Monster*> enemies) {
     NotifyTurnEvent(TurnEvent::EndTurn, &payload);
 }
 
-void CombatSystem::AddMonster(MonsterPtr monster, int initiative, Position pos) {
+void CombatSystem::AddMonster(MonsterPtr monster, int initiative, Position pos, int faction) {
     MonsterEnterPayload payload{};
     payload.monster = monster;
     payload.spawnPos = pos;
     payload.round = m_round;
     payload.initiative = initiative;
+    payload.faction = faction;
     NotifyTurnEvent(TurnEvent::MonsterEnter, &payload);
 
-    // TODO: instead of using this method use the events system!
-    m_battlefield.SetPosition(*monster, pos);
     AddListener(monster);
 }

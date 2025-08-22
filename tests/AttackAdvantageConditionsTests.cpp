@@ -31,8 +31,8 @@ protected:
     DummyMonster t{system, "T"};
 
     void SetUp() override {
-        system.AddMonster(&a, 10, {0, 0, 0});
-        system.AddMonster(&t, 5, {0, 0, 0});
+        system.AddMonster(&a, 10, {0, 0, 0}, 1);
+        system.AddMonster(&t, 5, {0, 0, 0}, 2);
     }
 };
 

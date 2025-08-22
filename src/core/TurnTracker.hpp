@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Types.hpp"
 #include "TurnEvent.hpp"
 
 #include <array>
+#include <map>
+#include <vector>
 
 namespace itsamonster {
 
@@ -25,6 +28,7 @@ struct TurnStatus {
     int initiative{ 0 };
     int damageTaken{ 0 };
     bool dead{ false };
+    int faction{ 0 }; // Faction ID for team identification
     /// @brief Pointer (not owning) to the monster whose turn is being tracked.
     Monster* self{ nullptr };
     TurnAction actions{};

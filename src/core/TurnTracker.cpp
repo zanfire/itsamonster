@@ -124,6 +124,7 @@ void TurnStatusTracker::AddMonster(MonsterEnterPayload* payload) {
     ctx.round = payload->round;
     ctx.initiative = payload->initiative;
     ctx.damageTaken = 0;
+    ctx.faction = payload->faction;
     ctx.actions = TurnAction{};
     
     m_turnTrackers[payload->monster->GetInstanceId()] = ctx;

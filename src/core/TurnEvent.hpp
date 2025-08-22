@@ -4,7 +4,6 @@
 #include <string_view> // added
 
 #include "Types.hpp"
-#include "core/Battlefield.hpp"
 
 namespace itsamonster {
 
@@ -117,6 +116,7 @@ struct MonsterEnterPayload : public MonsterPayload {
     Position spawnPos{};           // Position where the monster spawns
     int round{ 0 };                // Round when the monster enters
     int initiative{ 0 };           // Initiative value for sorting
+    int faction{ 0 };             // Faction ID for team identification
 };
 
 struct ConditionEventPayload : public MonsterPayload {
