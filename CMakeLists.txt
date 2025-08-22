@@ -17,12 +17,15 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # Explicit source list (core library sources excluding main)
 set(ITSAMONSTER_LIB_SOURCES
     src/Logger.cpp
+    src/Logger.hpp
     src/Match.hpp
     src/Types.hpp
     src/actions/Action.cpp
     src/actions/Action.hpp
     src/actions/AttackAction.cpp
     src/actions/AttackAction.hpp
+    src/actions/DashAction.cpp
+    src/actions/DashAction.hpp
     src/actions/RechargeAction.cpp
     src/actions/RechargeAction.hpp
     src/core/Battlefield.cpp

@@ -11,6 +11,13 @@ namespace itsamonster {
         struct Melee : public AttackMeleeAction {
             Melee(CombatSystem& system) : AttackMeleeAction(system, "Claw", 3, { std::make_pair(DamageType::Piercing, 4) }, 5, 2) {}
             ~Melee() override = default;
+
+            Advantage HasAdvantage(const Monster& attacker, const Monster& target) const override {
+                if (m_system.GetTurnStatusTracker().GetTurnStatus(target.GetInstanceId())->damageTaken > 0) {
+                    return Advantage::Advantage; // Sharky Warriors have advantage if target has taken damage
+                }
+                return Advantage::Normal; // Otherwise normal
+            }
         };
 
         SharkyWarrior(CombatSystem& system)

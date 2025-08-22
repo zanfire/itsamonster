@@ -43,9 +43,6 @@ public:
 
     // Movement & spatial
     virtual int GetSpeed() const { return m_speed; }
-    Position GetPosition() const {
-        return{ 0, 0, 0 };
-    }
 
     virtual std::string_view GetName() const { return m_name; }
     virtual int GetHP() const { return m_hp; }

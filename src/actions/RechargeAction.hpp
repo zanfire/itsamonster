@@ -13,7 +13,7 @@ namespace itsamonster {
 
 // RechargeAction models actions that require a recharge roll at start of turn (e.g., Recharge 5-6)
 struct RechargeAction : public Action {
-    RechargeAction(std::string_view n, int rechargeMin, int range) : m_name(n), m_rechargeMin(rechargeMin), m_range(range) {}
+    RechargeAction(CombatSystem& system, std::string_view n, int rechargeMin, int range) : m_system(system), m_name(n), m_rechargeMin(rechargeMin), m_range(range) {}
     ~RechargeAction() override = default;
 
     bool IsAvailable() const { return m_available; }
@@ -21,6 +21,7 @@ struct RechargeAction : public Action {
     void Consume() { m_available = false; }
     bool IsInRange(const Monster& attacker, const Monster& target) const override;
 protected:
+    CombatSystem& m_system;
     std::string_view m_name;
     int m_rechargeMin{ 0 }; // e.g., 5 for 'Recharge 5-6'
     bool m_available{ true };

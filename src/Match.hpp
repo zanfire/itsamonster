@@ -84,16 +84,16 @@ struct Match {
                     for (std::size_t k = 0; k < Team1Size; ++k) {
                         team1[k] = std::make_unique<MonsterType1>(system);
                         // Spread along Y axis; place on the right side
-                        int y = 150 + static_cast<int>(k) * 10;
-                        system.AddMonster(team1[k].get(), 20 - static_cast<int>(k), { 40, y, 0 }, 1);
+                        int y = static_cast<int>(k) * 10;
+                        system.AddMonster(team1[k].get(), 20, { 40, y, 0 }, 1);
                     }
                     // Instantiate team 2 monsters
                     std::array<std::unique_ptr<MonsterType2>, Team2Size> team2{};
                     for (std::size_t k = 0; k < Team2Size; ++k) {
                         team2[k] = std::make_unique<MonsterType2>(system);
                         // Spread along Y axis; place on the left side
-                        int y = 100 + static_cast<int>(k) * 10;
-                        system.AddMonster(team2[k].get(), 10 - static_cast<int>(k), { 30, y, 0 }, 2);
+                        int y = 60 + static_cast<int>(k) * 10;
+                        system.AddMonster(team2[k].get(), 10, { 40, y, 0 }, 2);
                     }
 
                     int rounds = Fight(system, team1, team2);

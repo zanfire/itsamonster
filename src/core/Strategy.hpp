@@ -62,12 +62,13 @@ private:
 class RangedKiteAI : public Strategy {
 public:
     RangedKiteAI(CombatSystem& system, double minPreferred = 10.0, double maxPreferred = 30.0)
-        : Strategy(system), m_minPreferred(minPreferred), m_maxPreferred(std::max(minPreferred, maxPreferred)) {}
+        : Strategy(system), m_minPreferred(minPreferred), m_maxPreferred(std::max(minPreferred, maxPreferred)), m_attackBehaviour(system) {}
     ~RangedKiteAI() override = default;
     void TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) override;
 private:
     double m_minPreferred{10.0};
     double m_maxPreferred{30.0};
+    AttackBehaviour m_attackBehaviour;
 };
 
 } // namespace itsamonster

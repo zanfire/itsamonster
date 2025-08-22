@@ -55,8 +55,8 @@ void Monster::TakeDamage(DamageType type, int damage) {}
 bool Monster::OnPositionChanged(Monster& monster, std::optional<Position> oldPos, Position newPos) {
     if (&monster != this) return true;
     std::cout << std::fixed << std::setprecision(2);
-    LOG(monster.GetName() << " moved from " << (oldPos ? std::to_string(oldPos->x) + "," + std::to_string(oldPos->y) : "unknown")
-        << " to " << newPos.x << "," << newPos.y);
+
+    LOGGER.LogMonster(monster, "Moved from %d,%d to %d,%d", (oldPos ? oldPos->x : 0), (oldPos ? oldPos->y : 0), newPos.x, newPos.y);
     return true;
 }
 
@@ -66,16 +66,16 @@ bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
 
     switch (ev) {
     case TurnEvent::StartTurn:
-        LOG(monsterPayload->monster->GetName() << " starts their turn.");
+        LOGGER.LogMonster(*monsterPayload->monster, " starts their turn.");
         break;
     case TurnEvent::EndTurn:
-        LOG(monsterPayload->monster->GetName() << " ends their turn.");
+        LOGGER.LogMonster(*monsterPayload->monster, " ends their turn.");
         break;
     case TurnEvent::BeforeAction:
-        LOG(monsterPayload->monster->GetName() << " is about to act.");
+        LOGGER.LogMonster(*monsterPayload->monster, " is about to act.");
         break;
     case TurnEvent::AfterAction:
-        LOG(monsterPayload->monster->GetName() << " has completed their action.");
+        LOGGER.LogMonster(*monsterPayload->monster, " has completed their action.");
         break;
     case TurnEvent::OnDamageApplied:
     {
@@ -94,15 +94,14 @@ bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
 
 bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
     if (payload == nullptr) {
-        LOG(m_name << " received null condition payload, ignoring.");
+        LOGGER.LogMonster(*this, " received null condition payload, ignoring.");
         return true; // Nothing to do
     }
     if (payload->monster != this) return true; // Not our condition
     if (payload->phase == Phase::Before) {
-        LOG(m_name << " is about to apply condition " << to_string(payload->condition)
-            << " for " << payload->duration << " rounds.");
+        LOGGER.LogMonster(*this, " is about to apply condition %s for %d rounds.", to_string(payload->condition).data(), payload->duration);
         if (IsImmune(payload->condition)) {
-            LOG(m_name << " is immune to " << to_string(payload->condition) << ", condition not applied.");
+            LOGGER.LogMonster(*this, " is immune to %s, condition not applied.", to_string(payload->condition).data());
             return false; // Skip applying condition
         }
     }
@@ -112,21 +111,21 @@ bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
 bool Monster::OnDamageApplied(DamagePayload* payload) {
     if (payload->monster != this) return true; // Not our damage
     if (payload->phase != DamagePhase::AfterApply) {
-        LOG(m_name << " received damage before application phase, skipping immunity/resistance checks.");
+        LOGGER.LogMonster(*this, " received damage before application phase, skipping immunity/resistance checks.");
         return true; // Only handle after-apply phase
     }
     for (auto& [type, amount] : payload->damages) {
         if (IsImmune(type)) {
             amount = 0;
-            LOG(m_name << " is immune to " << to_string(type) << ", no damage taken.");
+            LOGGER.LogMonster(*this, " is immune to %s, no damage taken.", to_string(type).data());
         }
         if (IsResistant(type)) {
             amount /= 2;
-            LOG(m_name << " is resistant to " << to_string(type) << ", damage halved to " << amount );
+            LOGGER.LogMonster(*this, " is resistant to %s, damage halved to %d.", to_string(type).data(), amount);
         }
         if (IsVulnerable(type)) {
             amount *= 2;
-            LOG(m_name << " is vulnerable to " << to_string(type) << ", damage doubled to " << amount);
+            LOGGER.LogMonster(*this, " is vulnerable to %s, damage doubled to %d.", to_string(type).data(), amount);
         }
     }
     return true;

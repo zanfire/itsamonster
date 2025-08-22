@@ -20,7 +20,7 @@ static AttackMeleeAction MakeMelee(CombatSystem& system) {
     return AttackMeleeAction(system, "Melee", /*atk*/0, { std::make_pair(DamageType::Slashing, 1) }, /*range*/5);
 }
 static AttackRangedAction MakeRanged(CombatSystem& system) {
-    return AttackRangedAction(system, "Ranged", /*atk*/0, { std::make_pair(DamageType::Slashing, 1) }, /*range*/30);
+    return AttackRangedAction(system, "Ranged", /*atk*/0, { std::make_pair(DamageType::Slashing, 1) }, /*range*/30, /*maxRange*/60);
 }
 
 // New shared fixture for all tests in this file

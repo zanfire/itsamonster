@@ -5,6 +5,7 @@
 #include "Logger.hpp"
 #include "core/CombatSystem.hpp"
 #include "actions/AttackAction.hpp"
+#include "actions/DashAction.hpp"
 
 using namespace itsamonster;
 
@@ -59,20 +60,18 @@ void AttackBehaviour::Execute(Monster& monster, const std::vector<Monster*>& ene
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
     }
-    auto& battlefield = m_system.GetBattlefield();
-    auto distance = battlefield.GetDistance(monster.GetInstanceId(), target->GetInstanceId());
 
     MonsterPayload monsterPayload;
     monsterPayload.monster = &monster;
     auto meleeAttack = monster.GetMeleeAttack();
-    if (meleeAttack && distance <= meleeAttack->GetRange()) {
+    if (meleeAttack && meleeAttack->IsInRange(monster, *target)) {
         if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {
             meleeAttack->Perform(monster, *target);
         }
         m_system.NotifyTurnEvent(TurnEvent::AfterAction, &monsterPayload);
     }
     auto rangedAttack = monster.GetRangedAttack();
-    if (rangedAttack && distance <= rangedAttack->GetRange())
+    if (rangedAttack && rangedAttack->IsInRange(monster, *target))
     {
         if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {
             rangedAttack->Perform(monster, *target);
@@ -100,8 +99,9 @@ void MeleeApproachAI::TakeTurn(Monster& monster, const std::vector<Monster*>& en
     else if (distance >= 5.0 && distance <= (monster.GetSpeed() - 5)) {
         m_moveBehaviour.Execute(monster, enemies);
     } else {
-        LOG("Monster " << monster.GetName() << " is too far from target " << target->GetName() << ", moving closer.");
-        m_moveBehaviour.Execute(monster, enemies);
+        DashAction dash(m_system);
+        LOG("Monster " << monster.GetName() << " is too far from target " << target->GetName() << ", moving closer with dash.");
+        dash.Perform(monster, *target);
     }
     m_attackBehaviour.Execute(monster, enemies);
 }
@@ -122,6 +122,8 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
     Position tp = *tpOpt;
     Position sp = *spOpt;
     double d = sp.DistanceTo(tp);
+
+    m_attackBehaviour.Execute(monster, enemies);
 
     if (d < m_minPreferred) {
         m_system.GetBattlefield().MoveAwayInSteps(monster, tp, remaining, m_minPreferred, 5.0);

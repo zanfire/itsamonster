@@ -10,7 +10,6 @@ struct AttackAction : public Action {
 
     bool IsInRange(const Monster& attacker, const Monster& target) const override;
     virtual Advantage HasAdvantage(const Monster& attacker, const Monster& target) const;
-    int GetRange() const { return m_range; }
 
 protected:
     void Execute(Monster& attacker, Monster& target) override;
@@ -35,7 +34,6 @@ struct AttackRangedAction : public AttackAction {
     AttackRangedAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range, int maxRange, int multiAttackCount = 1)
         : AttackAction(system, name, attackBonus, std::move(damage), range, multiAttackCount), m_maxRange(maxRange) {}
     ~AttackRangedAction() override = default;
-
 
     bool IsInRange(const Monster& attacker, const Monster& target) const override;
     Advantage HasAdvantage(const Monster& attacker, const Monster& target) const override;

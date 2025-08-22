@@ -76,12 +76,14 @@ void AttackAction::ExecuteSingleAttack(Monster& attacker, Monster& target) {
 }
 
 bool AttackAction::IsInRange(const Monster& attacker, const Monster& target) const {
-    double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+    auto battlefield = m_system.GetBattlefield();
+    double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
     return distance <= m_range;
 }
 
 bool AttackRangedAction::IsInRange(const Monster& attacker, const Monster& target) const {
-    double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+    auto battlefield = m_system.GetBattlefield();
+    double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
     return distance <= m_maxRange;
 }
 
@@ -117,7 +119,8 @@ Advantage AttackAction::HasAdvantage(const Monster& attacker, const Monster& tar
         adv = ResolveAdvantage(adv, Advantage::Disadvantage);
     }
     if (target.IsCondition(Condition::Prone)) {
-        double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+        auto battlefield = m_system.GetBattlefield();
+        double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
         if (distance <= 5.0) {
             LOG(target.GetName() << " is prone and within 5.0 units, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
@@ -147,7 +150,8 @@ Advantage AttackAction::HasAdvantage(const Monster& attacker, const Monster& tar
 
 Advantage AttackRangedAction::HasAdvantage(const Monster& attacker, const Monster& target) const {
     Advantage adv = AttackAction::HasAdvantage(attacker, target);
-    double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+    auto battlefield = m_system.GetBattlefield();
+    double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
     if (distance <= 5.0 && !attacker.IsCondition(Condition::Incapacitated)) {
         adv = ResolveAdvantage(adv, Advantage::Disadvantage); // close range, disadvantage
     }

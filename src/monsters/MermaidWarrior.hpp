@@ -27,7 +27,7 @@ namespace itsamonster {
                     std::make_pair(10, 0),
                     std::make_pair(8, -1)
                 }), m_attack(system), m_ranged(system) {
-            std::unique_ptr<MeleeApproachAI> ai = std::make_unique<MeleeApproachAI>(system, 5.0);
+            std::unique_ptr<RangedKiteAI> ai = std::make_unique<RangedKiteAI>(system, 30, 60);
 
             SetAI(std::move(ai));
         }

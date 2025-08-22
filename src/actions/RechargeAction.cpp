@@ -14,6 +14,7 @@ void RechargeAction::TryRecharge() {
 }
 
 bool RechargeAction::IsInRange(const Monster& attacker, const Monster& target) const {
-    double distance = attacker.GetPosition().DistanceTo(target.GetPosition());
+    auto battlefield = m_system.GetBattlefield();
+    double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
     return distance <= m_range;
 }
