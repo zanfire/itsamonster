@@ -1,6 +1,6 @@
 #include "actions/RechargeAction.hpp"
 #include "Logger.hpp"
-#include "Types.hpp"
+#include "monsters/Monster.hpp"
 
 using namespace itsamonster;
 

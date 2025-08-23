@@ -2,6 +2,8 @@
 
 #include "actions/Action.hpp"
 
+#include "core/CombatSystem.hpp"
+
 namespace itsamonster {
 struct AttackAction : public Action {
     AttackAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range, int multiAttackCount)

@@ -23,6 +23,9 @@ public:
     int GetHeight() const { return m_height; }
 
     Position Clamp(Position p) const {
+        //p.x = p.x / 5.0 * 5.0f + 2.5f;
+        //p.y = p.y / 5.0 * 5.0f + 2.5f;
+
         if (p.x < 0) p.x = 0; if (p.x >= m_width) p.x = m_width - 1;
         if (p.y < 0) p.y = 0; if (p.y >= m_height) p.y = m_height - 1;
         return p;
@@ -43,8 +46,9 @@ public:
     std::optional<Position> GetPosition(MonsterInstanceId monster) const;
 
     void SetDarkness(bool darkness);
-
     bool OnTurnEvent(TurnEvent ev, EventPayload* payload);
+
+    void ShowMap() const;
 private:
     CombatSystem& m_system;
     std::map<MonsterInstanceId, Position> m_positions; // Track monster positions

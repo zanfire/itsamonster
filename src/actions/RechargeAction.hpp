@@ -2,6 +2,7 @@
 
 #include "Logger.hpp"
 #include "Action.hpp"
+#include "core/CombatSystem.hpp"
 
 #include <array>
 #include <string>

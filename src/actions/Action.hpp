@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Logger.hpp"
-#include "monsters/Monster.hpp"
 
 namespace itsamonster {
+
+struct Monster;
 
 struct Action {
     Action() = default;

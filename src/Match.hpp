@@ -8,9 +8,7 @@
 #include <array>
 #include <string_view>
 #include <utility>
-#include <random>
 #include <iostream>
-#include <execution>
 #include <memory>
 #include <vector>
 #include <type_traits>
@@ -107,6 +105,10 @@ struct Match {
         std::cout << "Elapsed time: " << elapsed.count() << " ms\n";
     }
 
+    void AddSpawnPosition(Position pos) {
+        m_spwanPositions.emplace_back(pos);
+    }
+
 private:
     int Fight(
         CombatSystem& system,
@@ -144,7 +146,9 @@ private:
             round = system.GetCurrentRound();
 
             LOG("--- Round ended ---");
-            LOG("");
+        }
+        if (Logger::Instance().IsVerbose()) {
+            system.GetBattlefield().ShowMap();
         }
         bool team1Won = aliveCount(status1) > 0;
         if (team1Won) {
@@ -161,6 +165,7 @@ private:
     std::atomic<int> m_monsterWin2{ 0 };
     std::atomic<int> m_totalRounds{ 0 };
     bool m_darkness{ false };
+    std::vector<Position> m_spwanPositions;
 };
 
 } // namespace itsamonster

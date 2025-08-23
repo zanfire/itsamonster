@@ -1,4 +1,5 @@
 #include "AttackAction.hpp"
+#include "monsters/Monster.hpp"
 #include "Logger.hpp"
 #include "Types.hpp"
 

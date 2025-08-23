@@ -5,6 +5,8 @@
 
 using namespace itsamonster;
 
+namespace {
+}
 
 bool Battlefield::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
     auto monsterPayload = dynamic_cast<MonsterPayload*>(payload);
@@ -26,7 +28,7 @@ double Battlefield::MoveTowardsInSteps(Monster& mover,
     double initialRemainingSpeed = remainingSpeed;
     while (remainingSpeed > 0.0) {
         double dist = cur.DistanceTo(targetPos);
-        if (dist <= stopDistance + 1e-6) break;
+        if (dist <= stopDistance + 2.5f + 1e-6) break;
         double maxAdvance = std::max(0.0, dist - stopDistance);
         double toMove = std::min({ stepFeet, remainingSpeed, maxAdvance });
         if (toMove <= 0.0) break;
@@ -137,4 +139,41 @@ void Battlefield::SetDarkness(bool darkness) {
             }
         }
     }
+}
+
+void Battlefield::ShowMap() const {
+    std::string head;
+    std::string line;
+    std::string tail;
+
+    int width = int(m_width / 5.0f);
+    int height = int(m_height / 5.0f);
+    for (int i = 0; i < width; i++) {
+        if (i == 0) head = "X";
+        else if (i == (width - 1)) head += "X";
+        else head += "-";
+
+        if (i == 0) line = "|";
+        else if (i == (width - 1)) line += "|";
+        else line += " ";
+    }
+    tail = head;
+
+    std::cout << head << std::endl;
+    for (int i = 0; i < height; i++) {
+        std::string curLine = line;
+        for (const auto& [id, pos] : m_positions) {
+            if ((pos.y / 5) == i) {
+                auto status = m_system.GetTurnStatusTracker().GetTurnStatus(id);
+                if (status->dead) {
+                    curLine[pos.x / 5] = 'X';
+                }
+                else {
+                    curLine[pos.x / 5] = std::to_string(id)[0];
+                }
+            }
+        }
+        std::cout << curLine << std::endl;
+    }
+    std::cout << tail << std::endl;
 }

@@ -10,19 +10,29 @@
 using namespace itsamonster;
 
 namespace {
-    Monster* SelectTarget(CombatSystem& system, const std::vector<Monster*>& enemies) {
+    Monster* SelectTarget(CombatSystem& system, Monster& monster, const std::vector<Monster*>& enemies) {
+        MonsterPtr candidate = nullptr;
         // Simple target selection: choose the first valid enemy
         for (auto* enemy : enemies) {
             if (enemy && !system.GetTurnStatusTracker().GetTurnStatus(enemy->GetInstanceId())->dead) {
-                return enemy;
+                if (!candidate) {
+                    candidate = enemy;
+                }
+                else {
+                    auto dist1 = system.GetBattlefield().GetDistance(monster.GetInstanceId(), candidate->GetInstanceId());
+                    auto dist2 = system.GetBattlefield().GetDistance(monster.GetInstanceId(), enemy->GetInstanceId());
+                    if (dist2 < dist1) {
+                        candidate = enemy;
+                    }
+                }
             }
         }
-        return nullptr;
+        return candidate;
     }
 }
 
 void MoveCloseCombatBehaviour::Execute(Monster& monster, const std::vector<Monster*>& enemies) {
-    auto target = SelectTarget(m_system, enemies);
+    auto target = SelectTarget(m_system, monster, enemies);
     if (!target) {
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
@@ -55,7 +65,7 @@ void MoveCloseCombatBehaviour::Execute(Monster& monster, const std::vector<Monst
 }
 
 void AttackBehaviour::Execute(Monster& monster, const std::vector<Monster*>& enemies) {
-    auto target = SelectTarget(m_system, enemies);
+    auto target = SelectTarget(m_system, monster, enemies);
     if (!target) {
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
@@ -85,7 +95,7 @@ void MeleeApproachAI::TakeTurn(Monster& monster, const std::vector<Monster*>& en
         LOG_ERROR("No enemies to approach for monster: " << monster.GetName());
         return;
     }
-    auto target = SelectTarget(m_system, enemies);
+    auto target = SelectTarget(m_system, monster, enemies);
     if (!target) {
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
@@ -108,7 +118,7 @@ void MeleeApproachAI::TakeTurn(Monster& monster, const std::vector<Monster*>& en
 
 
 void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemies) {
-    auto target = SelectTarget(m_system, enemies);
+    auto target = SelectTarget(m_system, monster, enemies);
     if (!target) {
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
@@ -123,12 +133,19 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
     Position sp = *spOpt;
     double d = sp.DistanceTo(tp);
 
-    m_attackBehaviour.Execute(monster, enemies);
+    // move to desirred range, and after move to far away
+    if (d <= m_minPreferred) {
+        m_attackBehaviour.Execute(monster, enemies);
+    }
 
     if (d < m_minPreferred) {
         m_system.GetBattlefield().MoveAwayInSteps(monster, tp, remaining, m_minPreferred, 5.0);
     } else if (d > m_maxPreferred) {
         m_system.GetBattlefield().MoveTowardsInSteps(monster, tp, remaining, m_maxPreferred, 5.0);
+    }
+
+    if (d <= m_maxPreferred) {
+        m_attackBehaviour.Execute(monster, enemies);
     }
 }
 
