@@ -1,12 +1,13 @@
 #pragma once
 
 #include "actions/Action.hpp"
-
-#include "core/CombatSystem.hpp"
+#include "Types.hpp"
+#include <vector>
 
 namespace itsamonster {
+
 struct AttackAction : public Action {
-    AttackAction(CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range, int multiAttackCount)
+    AttackAction(class CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range, int multiAttackCount)
         : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damages(std::move(damage)), m_range(range), m_multiAttackCount(multiAttackCount) {}
     ~AttackAction() override = default;
 
@@ -18,7 +19,7 @@ protected:
     void ExecuteSingleAttack(Monster& attacker, Monster& target);
 
 protected:
-    CombatSystem& m_system;
+    class CombatSystem& m_system;
     std::string_view m_name;
     int m_attackBonus;
     std::vector<std::pair<DamageType, int>> m_damages;

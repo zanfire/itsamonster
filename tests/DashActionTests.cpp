@@ -2,6 +2,7 @@
 
 #include "actions/DashAction.hpp"
 #include "core/CombatSystem.hpp"
+#include "monsters/Monster.hpp"
 
 using namespace itsamonster;
 

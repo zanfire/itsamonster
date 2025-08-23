@@ -123,27 +123,107 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
     }
+    auto& battlefield = m_system.GetBattlefield();
     double remaining = static_cast<double>(monster.GetSpeed());
-    auto tpOpt = m_system.GetBattlefield().GetPosition(target->GetInstanceId());
-    auto spOpt = m_system.GetBattlefield().GetPosition(monster.GetInstanceId());
+    auto tpOpt = battlefield.GetPosition(target->GetInstanceId());
+    auto spOpt = battlefield.GetPosition(monster.GetInstanceId());
 
     if (!tpOpt || !spOpt) return;
 
     Position tp = *tpOpt;
     Position sp = *spOpt;
-    double d = sp.DistanceTo(tp);
 
-    // move to desirred range, and after move to far away
+    auto recompute = [&]() {
+        auto curOpt = battlefield.GetPosition(monster.GetInstanceId());
+        if (curOpt) sp = *curOpt;
+    };
+
+    auto distTo = [&](const Position& a, const Position& b) {
+        return a.DistanceTo(b);
+    };
+
+    auto center = Position{ battlefield.GetWidth() / 2, battlefield.GetHeight() / 2 };
+
+    // Helper to move one step combining "away from target" with a bias toward center (away from borders)
+    auto stepAwayPreferCenter = [&](double stepFeet, double targetDist) {
+        double d = distTo(sp, tp);
+        if (d <= 0.0) d = 1.0; // avoid div by zero
+
+        // Unit vector away from target
+        double ax = (static_cast<double>(sp.x) - static_cast<double>(tp.x)) / d;
+        double ay = (static_cast<double>(sp.y) - static_cast<double>(tp.y)) / d;
+
+        // Unit vector toward center (away from borders)
+        double cx = static_cast<double>(center.x - sp.x);
+        double cy = static_cast<double>(center.y - sp.y);
+        double clen = std::sqrt(cx * cx + cy * cy);
+        if (clen > 1e-9) { cx /= clen; cy /= clen; } else { cx = 0.0; cy = 0.0; }
+
+        // Compute how close we are to the nearest border, in feet
+        double marginLeft = static_cast<double>(sp.x);
+        double marginRight = static_cast<double>(battlefield.GetWidth() - 1 - sp.x);
+        double marginTop = static_cast<double>(sp.y);
+        double marginBottom = static_cast<double>(battlefield.GetHeight() - 1 - sp.y);
+        double minMargin = std::min(std::min(marginLeft, marginRight), std::min(marginTop, marginBottom));
+
+        // Start biasing toward center when within this range of a border
+        const double influenceRange = 10.0; // feet
+        double w = 0.0;
+        if (minMargin < influenceRange) {
+            w = (influenceRange - minMargin) / influenceRange; // 0..1
+        }
+
+        // Blend directions: always move away from target; add center bias if near border
+        double kCenter = 1.5; // strength of center bias
+        double dx = ax + kCenter * w * cx;
+        double dy = ay + kCenter * w * cy;
+        double len = std::sqrt(dx * dx + dy * dy);
+        if (len > 1e-9) { dx /= len; dy /= len; }
+        else { dx = ax; dy = ay; }
+
+        // Don't overshoot the desired target distance
+        double toMove = std::min(stepFeet, std::min(remaining, std::max(0.0, targetDist - d)));
+        if (toMove <= 0.0) return false;
+
+        Position next{
+            static_cast<int>(std::round(sp.x + dx * toMove)),
+            static_cast<int>(std::round(sp.y + dy * toMove))
+        };
+        if (next.x == sp.x && next.y == sp.y) {
+            int sdx = (dx > 0.1) ? 1 : (dx < -0.1) ? -1 : 0;
+            int sdy = (dy > 0.1) ? 1 : (dy < -0.1) ? -1 : 0;
+            if (sdx == 0 && sdy == 0) sdx = 1;
+            next = Position{ sp.x + sdx, sp.y + sdy };
+        }
+
+        battlefield.SetPosition(monster, next);
+        remaining -= toMove;
+        recompute();
+        return true;
+    };
+
+    double d = distTo(sp, tp);
+
+    // If too close, optionally attack first (opportunity to shoot at close range), then kite away with border awareness
     if (d <= m_minPreferred) {
         m_attackBehaviour.Execute(monster, enemies);
     }
 
     if (d < m_minPreferred) {
-        m_system.GetBattlefield().MoveAwayInSteps(monster, tp, remaining, m_minPreferred, 5.0);
+        const double stepFeet = 5.0;
+        // Keep stepping away until we reach the minimum preferred distance or run out of movement
+        int safety = 64; // prevent infinite loops
+        while (remaining > 0.0 && d < m_minPreferred && safety-- > 0) {
+            if (!stepAwayPreferCenter(stepFeet, m_minPreferred)) break;
+            d = distTo(sp, tp);
+        }
     } else if (d > m_maxPreferred) {
-        m_system.GetBattlefield().MoveTowardsInSteps(monster, tp, remaining, m_maxPreferred, 5.0);
+        battlefield.MoveTowardsInSteps(monster, tp, remaining, m_maxPreferred, 5.0);
+        recompute();
+        d = distTo(sp, tp);
     }
 
+    // If within max preferred range after movement, attack
     if (d <= m_maxPreferred) {
         m_attackBehaviour.Execute(monster, enemies);
     }

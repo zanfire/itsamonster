@@ -2,6 +2,7 @@
 
 #include "actions/AttackAction.hpp"
 #include "core/CombatSystem.hpp"
+#include "monsters/Monster.hpp"
 #include "test_utils/MockDice.hpp"
 
 using namespace itsamonster;
