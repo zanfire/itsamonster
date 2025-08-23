@@ -69,6 +69,7 @@ public:
     virtual bool IsVulnerable(DamageType type) const { return false; }
     virtual bool IsResistant(DamageType type) const { return false; }
     virtual bool HasDarkvision() const { return false; }
+    virtual MonsterSize GetMonsterSize() const { return MonsterSize::Medium; }
 
     // AI strategy accessors (non-owning pointer; external code manages lifetime)
     void SetAI(std::shared_ptr<struct Strategy> ai) { m_ai = ai; }

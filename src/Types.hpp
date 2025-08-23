@@ -53,7 +53,7 @@ enum class Condition : uint32_t {
     Count
 };
 
-enum class Size : uint32_t {
+enum class MonsterSize : uint32_t {
     Tiny = 0,
     Small,
     Medium,
@@ -113,14 +113,14 @@ inline std::string_view to_string(Condition cond) {
     }
 }
 
-inline std::string_view to_string(Size size) {
+inline std::string_view to_string(MonsterSize size) {
     switch (size) {
-        case Size::Tiny:       return "Tiny";
-        case Size::Small:      return "Small";
-        case Size::Medium:     return "Medium";
-        case Size::Large:      return "Large";
-        case Size::Huge:       return "Huge";
-        case Size::Gargantuan: return "Gargantuan";
+        case MonsterSize::Tiny:       return "Tiny";
+        case MonsterSize::Small:      return "Small";
+        case MonsterSize::Medium:     return "Medium";
+        case MonsterSize::Large:      return "Large";
+        case MonsterSize::Huge:       return "Huge";
+        case MonsterSize::Gargantuan: return "Gargantuan";
         default:               return "Unknown";
     }
 }
