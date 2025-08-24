@@ -85,6 +85,7 @@ struct MonsterPayload : public EventPayload {
 
 struct AttackRollPayload : public MonsterPayload {
     Monster* target{ nullptr }; // Target monster for the attack
+    struct Action* action{ nullptr };
     Advantage advantage{ Advantage::Normal }; // Advantage/Disadvantage state
     int attackRoll{ 0 }; // Result of the attack roll
     int ac{ 0 }; // Target's AC for the attack

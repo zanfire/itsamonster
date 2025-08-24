@@ -66,16 +66,16 @@ bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
 
     switch (ev) {
     case TurnEvent::StartTurn:
-        LOGGER.LogMonster(*monsterPayload->monster, " starts their turn.");
+        LOGGER.LogMonster(*monsterPayload->monster, "starts their turn.");
         break;
     case TurnEvent::EndTurn:
-        LOGGER.LogMonster(*monsterPayload->monster, " ends their turn.");
+        LOGGER.LogMonster(*monsterPayload->monster, "ends their turn.");
         break;
     case TurnEvent::BeforeAction:
-        LOGGER.LogMonster(*monsterPayload->monster, " is about to act.");
+        LOGGER.LogMonster(*monsterPayload->monster, "is about to act.");
         break;
     case TurnEvent::AfterAction:
-        LOGGER.LogMonster(*monsterPayload->monster, " has completed their action.");
+        LOGGER.LogMonster(*monsterPayload->monster, "has completed their action.");
         break;
     case TurnEvent::OnDamageApplied:
     {
@@ -94,14 +94,14 @@ bool Monster::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
 
 bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
     if (payload == nullptr) {
-        LOGGER.LogMonster(*this, " received null condition payload, ignoring.");
+        LOGGER.LogMonster(*this, "received null condition payload, ignoring.");
         return true; // Nothing to do
     }
     if (payload->monster != this) return true; // Not our condition
     if (payload->phase == Phase::Before) {
-        LOGGER.LogMonster(*this, " is about to apply condition %s for %d rounds.", to_string(payload->condition).data(), payload->duration);
+        LOGGER.LogMonster(*this, "is about to apply condition %s for %d rounds.", to_string(payload->condition).data(), payload->duration);
         if (IsImmune(payload->condition)) {
-            LOGGER.LogMonster(*this, " is immune to %s, condition not applied.", to_string(payload->condition).data());
+            LOGGER.LogMonster(*this, "is immune to %s, condition not applied.", to_string(payload->condition).data());
             return false; // Skip applying condition
         }
     }
@@ -111,21 +111,21 @@ bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
 bool Monster::OnDamageApplied(DamagePayload* payload) {
     if (payload->monster != this) return true; // Not our damage
     if (payload->phase != DamagePhase::AfterApply) {
-        LOGGER.LogMonster(*this, " received damage before application phase, skipping immunity/resistance checks.");
+        LOGGER.LogMonster(*this, "received damage before application phase, skipping immunity/resistance checks.");
         return true; // Only handle after-apply phase
     }
     for (auto& [type, amount] : payload->damages) {
         if (IsImmune(type)) {
             amount = 0;
-            LOGGER.LogMonster(*this, " is immune to %s, no damage taken.", to_string(type).data());
+            LOGGER.LogMonster(*this, "is immune to %s, no damage taken.", to_string(type).data());
         }
         if (IsResistant(type)) {
             amount /= 2;
-            LOGGER.LogMonster(*this, " is resistant to %s, damage halved to %d.", to_string(type).data(), amount);
+            LOGGER.LogMonster(*this, "is resistant to %s, damage halved to %d.", to_string(type).data(), amount);
         }
         if (IsVulnerable(type)) {
             amount *= 2;
-            LOGGER.LogMonster(*this, " is vulnerable to %s, damage doubled to %d.", to_string(type).data(), amount);
+            LOGGER.LogMonster(*this, "is vulnerable to %s, damage doubled to %d.", to_string(type).data(), amount);
         }
     }
     return true;

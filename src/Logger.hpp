@@ -22,7 +22,7 @@ namespace itsamonster {
 
         void Debug(const char* fmt, ...);
 
-        void LogMonster(struct Monster& monster, const char* fmt, ...);
+        void LogMonster(const struct Monster& monster, const char* fmt, ...);
 
     private:
         Logger() = default;

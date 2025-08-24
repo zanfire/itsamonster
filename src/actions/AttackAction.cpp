@@ -10,7 +10,7 @@ namespace itsamonster {
     void AttackAction::Execute(Monster& attacker, Monster& target) {
         for (int i = 0; i < m_multiAttackCount; ++i) {
             if (m_multiAttackCount > 1) {
-                LOG(attacker.GetName() << " execute multi-attack " << (i + 1) << "/" << m_multiAttackCount);
+                LOGGER.LogMonster(attacker, "execute multi-attack %d/%d", i + 1, m_multiAttackCount);
             }
             ExecuteSingleAttack(attacker, target);
         }
@@ -18,16 +18,17 @@ namespace itsamonster {
 
     void AttackAction::ExecuteSingleAttack(Monster& attacker, Monster& target) {
         if (attacker.IsCondition(Condition::Incapacitated)) {
-            LOG(attacker.GetName() << " is incapacitated and cannot take actions!");
+            LOGGER.LogMonster(attacker, "is incapacitated and cannot take actions!");
             return;
         }
         if (!IsInRange(attacker, target)) {
-            LOG(attacker.GetName() << " is out of range for " << m_name << " (range " << m_range << ")");
+            LOGGER.LogMonster(attacker, "is out of range for %s (range %d)", m_name.data(), m_range);
             return; // can't attack this action
         }
 
         AttackRollPayload attackRollPayload{};
         attackRollPayload.monster = &attacker;
+        attackRollPayload.action = this;
         attackRollPayload.target = &target;
         attackRollPayload.advantage = HasAdvantage(attacker, target);
         attackRollPayload.attackRoll = 0; // Will be set after the roll
@@ -160,7 +161,8 @@ namespace itsamonster {
             adv = ResolveAdvantage(adv, Advantage::Disadvantage); // close range, disadvantage
         }
         if (distance > m_range && distance <= m_maxRange) {
-            LOG(attacker.GetName() << " is out of normal range for " << m_name << " (max range " << m_maxRange << "), disadvantage");
+
+            LOGGER.LogMonster(attacker, "is out of range for %s (max range %d), disadvantage", m_name.data(), m_maxRange);
             adv = Advantage::Disadvantage; // Out of range, no advantage
         }
         return adv;

@@ -38,6 +38,10 @@ int main(int argc, char **argv) {
     using TeamFrogs = std::array<MermaidWarrior, 2>;
     using TeamFish = std::array<SharkyWarrior, 1>;
     Match<TeamFrogs, TeamFish> match(in_darkness);
+    match.AddSpawnPosition({ 200, 10, 0 });
+    match.AddSpawnPosition({ 180, 30, 0 });
+    match.AddSpawnPosition({ 200, 90, 0 });
+
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

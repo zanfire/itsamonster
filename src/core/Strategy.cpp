@@ -61,7 +61,8 @@ void MoveCloseCombatBehaviour::Execute(Monster& monster, const std::vector<Monst
     auto ctx = turnStatus.GetTurnStatus(monster.GetInstanceId());
     // Move towards the closest enemy until within close distance
     double remaining = static_cast<double>(monster.GetSpeed()) - ctx->actions.movement;
-    battlefield.MoveTowardsInSteps(monster, *targetPosOpt, remaining, m_closeDistance, 5.0);
+    // Size-aware approach: stop when edge-to-edge distance is within close distance
+    battlefield.MoveTowardsInSteps(monster, *target, remaining, m_closeDistance, 5.0);
 }
 
 void AttackBehaviour::Execute(Monster& monster, const std::vector<Monster*>& enemies) {
@@ -104,13 +105,15 @@ void MeleeApproachAI::TakeTurn(Monster& monster, const std::vector<Monster*>& en
     auto& battlefield = m_system.GetBattlefield();
     auto distance = battlefield.GetDistance(monster.GetInstanceId(), target->GetInstanceId());
     if (distance < 5.0) {
+        LOGGER.LogMonster(monster, "is close %s, attack. (distance %.2f)", target->GetName().data(), distance);
         m_attackBehaviour.Execute(monster, enemies);
     }
-    else if (distance >= 5.0 && distance <= (monster.GetSpeed() - 5)) {
+    else if (distance >= 5.0 && distance <= (monster.GetSpeed())) {
+        LOGGER.LogMonster(monster, "is far from target %s, moving closer. (distance %.2f)", target->GetName().data(), distance);
         m_moveBehaviour.Execute(monster, enemies);
     } else {
         DashAction dash(m_system);
-        LOG("Monster " << monster.GetName() << " is too far from target " << target->GetName() << ", moving closer with dash.");
+        LOGGER.LogMonster(monster, "is too far from target %s, moving closer with dash. (distance %.2f)", target->GetName().data(), distance);
         dash.Perform(monster, *target);
     }
     m_attackBehaviour.Execute(monster, enemies);
@@ -123,12 +126,21 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         LOG_ERROR("No valid target found for monster: " << monster.GetName());
         return;
     }
+
+
     auto& battlefield = m_system.GetBattlefield();
     double remaining = static_cast<double>(monster.GetSpeed());
     auto tpOpt = battlefield.GetPosition(target->GetInstanceId());
     auto spOpt = battlefield.GetPosition(monster.GetInstanceId());
 
     if (!tpOpt || !spOpt) return;
+
+    auto distance = battlefield.GetDistance(monster.GetInstanceId(), target->GetInstanceId());
+    if (distance < 5.0) {
+        LOGGER.LogMonster(monster, "is close %s, attack. (distance %.2f)", target->GetName().data(), distance);
+        m_attackBehaviour.Execute(monster, enemies);
+        return;
+    }
 
     Position tp = *tpOpt;
     Position sp = *spOpt;
@@ -138,20 +150,20 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         if (curOpt) sp = *curOpt;
     };
 
-    auto distTo = [&](const Position& a, const Position& b) {
-        return a.DistanceTo(b);
+    auto edgeDist = [&]() {
+        return battlefield.GetDistance(monster.GetInstanceId(), target->GetInstanceId());
     };
 
     auto center = Position{ battlefield.GetWidth() / 2, battlefield.GetHeight() / 2 };
 
     // Helper to move one step combining "away from target" with a bias toward center (away from borders)
     auto stepAwayPreferCenter = [&](double stepFeet, double targetDist) {
-        double d = distTo(sp, tp);
-        if (d <= 0.0) d = 1.0; // avoid div by zero
+        double dCenter = static_cast<double>(Position{sp}.DistanceTo(tp));
+        if (dCenter <= 0.0) dCenter = 1.0; // avoid div by zero
 
         // Unit vector away from target
-        double ax = (static_cast<double>(sp.x) - static_cast<double>(tp.x)) / d;
-        double ay = (static_cast<double>(sp.y) - static_cast<double>(tp.y)) / d;
+        double ax = (static_cast<double>(sp.x) - static_cast<double>(tp.x)) / dCenter;
+        double ay = (static_cast<double>(sp.y) - static_cast<double>(tp.y)) / dCenter;
 
         // Unit vector toward center (away from borders)
         double cx = static_cast<double>(center.x - sp.x);
@@ -182,7 +194,9 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         else { dx = ax; dy = ay; }
 
         // Don't overshoot the desired target distance
-        double toMove = std::min(stepFeet, std::min(remaining, std::max(0.0, targetDist - d)));
+    // Use edge-to-edge distance for deciding how far to move away
+    double dEdge = edgeDist();
+    double toMove = std::min(stepFeet, std::min(remaining, std::max(0.0, targetDist - dEdge)));
         if (toMove <= 0.0) return false;
 
         Position next{
@@ -202,7 +216,7 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         return true;
     };
 
-    double d = distTo(sp, tp);
+    double d = edgeDist();
 
     // If too close, optionally attack first (opportunity to shoot at close range), then kite away with border awareness
     if (d <= m_minPreferred) {
@@ -215,12 +229,13 @@ void RangedKiteAI::TakeTurn(Monster& monster, const std::vector<Monster*>& enemi
         int safety = 64; // prevent infinite loops
         while (remaining > 0.0 && d < m_minPreferred && safety-- > 0) {
             if (!stepAwayPreferCenter(stepFeet, m_minPreferred)) break;
-            d = distTo(sp, tp);
+            d = edgeDist();
         }
     } else if (d > m_maxPreferred) {
-        battlefield.MoveTowardsInSteps(monster, tp, remaining, m_maxPreferred, 5.0);
+        // Size-aware approach
+    battlefield.MoveTowardsInSteps(monster, *target, remaining, m_maxPreferred, 5.0);
         recompute();
-        d = distTo(sp, tp);
+        d = edgeDist();
     }
 
     // If within max preferred range after movement, attack

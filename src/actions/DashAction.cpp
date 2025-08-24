@@ -40,6 +40,7 @@ void DashAction::Execute(Monster& attacker, Monster& target) {
 
     double remaining = static_cast<double>(attacker.GetSpeed() * 2) - status->actions.movement;
     // Perform the dash movement now, independent of prior movement; action economy already consumed.
-    double moved = battlefield.MoveTowardsInSteps(attacker, *tpOpt, remaining, m_stopDistance, 5.0);
+    // Use size-aware overload to stop at correct edge-to-edge distance
+    double moved = battlefield.MoveTowardsInSteps(attacker, target, remaining, m_stopDistance, 5.0);
     LOG(attacker.GetName() << " dashes " << moved << " feet towards " << target.GetName());
 }

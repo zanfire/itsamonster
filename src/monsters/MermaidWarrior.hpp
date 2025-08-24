@@ -14,8 +14,22 @@ namespace itsamonster {
         };
 
         struct Ranged : public AttackRangedAction {
-            Ranged(CombatSystem& system) : AttackRangedAction(system, "Trident", 2, { std::make_pair(DamageType::Piercing, 3), std::make_pair(DamageType::Cold, 2) }, 20, 60) {}
-            ~Ranged() override = default;
+            Ranged(CombatSystem& system) : AttackRangedAction(system, "Trident", 2, { std::make_pair(DamageType::Piercing, 3), std::make_pair(DamageType::Cold, 2) }, 20, 60) {
+                m_system.AddListener(this);
+            }
+            ~Ranged() override {
+                m_system.RemoveListener(this);
+            }
+
+            bool OnTurnEvent(TurnEvent ev, EventPayload* p) {
+                if (ev == TurnEvent::OnHit) {
+                    auto payload = dynamic_cast<AttackRollPayload*>(p);
+                    if (payload == nullptr || payload->action != this) return true;
+                    LOGGER.LogMonster(*payload->target, "Got hit by magic trident, movement reduced by 10.");
+                    m_system.GetTurnStatusTracker().GetTurnStatus(payload->target->GetInstanceId())->actions.movement += 10.f;
+                }
+                return true;
+            }
         };
 
         MermaidWarrior(CombatSystem& system)

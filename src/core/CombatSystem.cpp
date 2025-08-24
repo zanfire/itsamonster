@@ -54,13 +54,12 @@ void CombatSystem::Round() {
     NotifyTurnEvent(TurnEvent::NewRound, &payload);
 
     for (auto monster : m_turnStatusTracker.GetTurnOrder()) {
-        if (Logger::Instance().IsVerbose()) {
-            m_battlefield.ShowMap();
+        auto status = m_turnStatusTracker.GetTurnStatus(monster->GetInstanceId());
+        if (status->dead) {
+            LOGGER.LogMonster(*monster, "Skipping turn, is dead.");
+            continue; // Skip dead monsters
         }
         Turn(*monster, m_enemies[monster->GetInstanceId()]);
-        if (Logger::Instance().IsVerbose()) {
-            m_battlefield.ShowMap();
-        }
     }
 }
 

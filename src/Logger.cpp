@@ -14,7 +14,7 @@ void Logger::Debug(const char* fmt, ...) {
 }
 
 // printf-style monster log, only prints when verbose is enabled
-void Logger::LogMonster(struct Monster& monster, const char* fmt, ...) {
+void Logger::LogMonster(const struct Monster& monster, const char* fmt, ...) {
     if (!IsVerbose()) return;
     va_list args;
     va_start(args, fmt);

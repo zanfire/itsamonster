@@ -36,6 +36,11 @@ public:
     // stepFeet controls the granularity of events (default 5 ft).
     double MoveTowardsInSteps(Monster& mover, const Position& targetPos, double& remainingSpeed, double stopDistance, double stepFeet = 5.0);
 
+    // Size-aware overload: move towards a target Monster, stopping when the edge-to-edge
+    // distance is within stopDistance (e.g., attack reach) rather than center-to-center.
+    // stepFeet controls the granularity of events (default 5 ft).
+    double MoveTowardsInSteps(Monster& mover, const Monster& target, double& remainingSpeed, double stopDistance, double stepFeet = 5.0);
+
     // Move away from fromPos until at least targetDistance away, consuming remainingSpeed.
     // stepFeet controls the granularity (default 5 ft).
     void MoveAwayInSteps(Monster& mover, const Position& fromPos, double& remainingSpeed, double targetDistance, double stepFeet = 5.0);

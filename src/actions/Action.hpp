@@ -1,12 +1,11 @@
 #pragma once
 
-#include "Logger.hpp"
+#include "monsters/Monster.hpp"
+#include "core/TurnEvent.hpp"
 
 namespace itsamonster {
 
-struct Monster;
-
-struct Action {
+struct Action : public TurnEventListener {
     Action() = default;
     virtual ~Action() = default;
 
