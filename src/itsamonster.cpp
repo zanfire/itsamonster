@@ -1,6 +1,8 @@
 
 #include "monsters/MermaidWarrior.hpp"
 #include "monsters/SharkyWarrior.hpp"
+#include "monsters/ReefShark.hpp"
+
 #include "Match.hpp"
 
 #include <iostream>
@@ -37,10 +39,10 @@ int main(int argc, char **argv) {
 
     using TeamFrogs = std::array<MermaidWarrior, 2>;
     using TeamFish = std::array<SharkyWarrior, 1>;
-    Match<TeamFrogs, TeamFish> match(in_darkness);
-    match.AddSpawnPosition({ 200, 10, 0 });
-    match.AddSpawnPosition({ 180, 30, 0 });
-    match.AddSpawnPosition({ 200, 90, 0 });
+    Match match(in_darkness);
+    match.AddMonster("Mermaid", [](CombatSystem& s) { return std::make_unique<MermaidWarrior>(s); }, { 200, 10, 0 });
+    match.AddMonster("Mermaid", [](CombatSystem& s) { return std::make_unique<MermaidWarrior>(s); }, { 180, 30, 0 });
+    match.AddMonster("Sharky", [](CombatSystem& s) { return std::make_unique<SharkyWarrior>(s); }, { 200, 90, 0 });
 
     match.Go(total_simulations, seed);
 

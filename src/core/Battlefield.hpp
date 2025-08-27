@@ -54,6 +54,9 @@ public:
     bool OnTurnEvent(TurnEvent ev, EventPayload* payload);
 
     void ShowMap() const;
+
+private:
+    void CheckCover(AttackRollPayload* payload);
 private:
     CombatSystem& m_system;
     std::map<MonsterInstanceId, Position> m_positions; // Track monster positions

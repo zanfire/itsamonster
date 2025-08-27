@@ -6,14 +6,6 @@
 
 using namespace itsamonster;
 
-#define GET_TURN_TRACKER(monster) \
-    auto it = m_turnTrackers.find(monster->GetInstanceId()); \
-    if (it == m_turnTrackers.end()) { \
-        LOG("Monster " << monster->GetName() << " is not tracked!"); \
-        return false; \
-    } \
-    TurnStatus& tracker = it->second;
-
 TurnStatusTracker::TurnStatusTracker(CombatSystem& combatSystem)
     : m_system(combatSystem) {
 }
@@ -134,6 +126,21 @@ void TurnStatusTracker::AddMonster(MonsterEnterPayload* payload) {
         [&](MonsterPtr a, MonsterPtr b) { return m_turnTrackers[a->GetInstanceId()].initiative > m_turnTrackers[b->GetInstanceId()].initiative; });
 
     LOG("New monster " << payload->monster->GetName() << " tracked");
+}
+
+
+bool TurnStatusTracker::IsAlliesNear(MonsterInstanceId allieId, MonsterInstanceId enemyId, int range) const {
+    auto faction = GetTurnStatus(allieId)->faction;
+    auto enemyPos = m_system.GetBattlefield().GetPosition(enemyId);
+    for (const auto& [id, status] : m_turnTrackers) {
+        if (id == allieId) continue;
+        if (status.faction == faction) {
+            if (m_system.GetBattlefield().GetPosition(id)->DistanceTo(*enemyPos) <= range) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 bool TurnStatusTracker::TrackCondition(ConditionEventPayload* payload) {

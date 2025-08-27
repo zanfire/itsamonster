@@ -52,6 +52,13 @@ public:
     bool OnTurnEvent(TurnEvent ev, EventPayload* payload) override;
 
     const std::vector<MonsterPtr>& GetTurnOrder() const { return m_turnOrder; }
+    const TurnStatus* GetTurnStatus(MonsterInstanceId id) const {
+        auto it = m_turnTrackers.find(id);
+        if (it != m_turnTrackers.end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
     TurnStatus* GetTurnStatus(MonsterInstanceId id) {
         auto it = m_turnTrackers.find(id);
         if (it != m_turnTrackers.end()) {
@@ -59,6 +66,9 @@ public:
         }
         return nullptr;
     }
+
+
+    bool IsAlliesNear(MonsterInstanceId id1, MonsterInstanceId id2, int range) const;
 private:
     void AddMonster(MonsterEnterPayload* payload);
     bool TrackDamage(DamagePayload* payload);

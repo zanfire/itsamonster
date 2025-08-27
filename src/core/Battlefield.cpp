@@ -32,6 +32,10 @@ bool Battlefield::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
         auto monsterEnterPayload = dynamic_cast<MonsterEnterPayload*>(payload);
         SetPosition(*monsterEnterPayload->monster, monsterEnterPayload->spawnPos);
     }
+    if (ev == TurnEvent::AttackRoll) {
+        auto attackPayload = dynamic_cast<AttackRollPayload*>(payload);
+        CheckCover(attackPayload);
+    }
     return true;
 }
 
@@ -264,4 +268,16 @@ void Battlefield::ShowMap() const {
         std::cout << curLine << std::endl;
     }
     std::cout << tail << std::endl;
+}
+
+
+void Battlefield::CheckCover(AttackRollPayload* payload) {
+    if (GetDistance(payload->monster->GetInstanceId(), payload->target->GetInstanceId()) > 5.0) {
+        // Only check cover for ranged attacks (within 5 ft)
+        if (m_system.GetTurnStatusTracker().IsAlliesNear(payload->target->GetInstanceId(), payload->monster->GetInstanceId(), 5)) {
+            // Target has allies within 5 ft, grant half cover
+            payload->ac += 2;
+            LOGGER.LogMonster(*payload->target, "gains half cover (+2 AC) against %s's attack due to nearby allies.", payload->monster->GetName().data());
+        }
+    }
 }
