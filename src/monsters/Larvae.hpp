@@ -12,7 +12,7 @@ struct Larvae : public Monster {
         ~Bite() override = default;
     };
     Larvae(CombatSystem& system)
-    : Monster(system, "Larvae", 9, 9, 10, {
+    : Monster(system, "Larvae", {
             std::make_pair(9, -1),
             std::make_pair(9, -1),
             std::make_pair(10, 0),
@@ -27,6 +27,10 @@ struct Larvae : public Monster {
     }
 
     bool HasDarkvision() const override { return true; }
+
+    int GetHP() const override { return 9; }
+    int GetAC() const override { return 9; }
+    int GetSpeed() const override { return 10; }
 
 private:
     Bite m_bite;

@@ -8,9 +8,15 @@ using namespace itsamonster;
 
 struct DashTestMonster : public Monster {
     DashTestMonster(CombatSystem& system, std::string_view name, int speed)
-        : Monster(system, name, 30, 10, speed, {
+        : Monster(system, name, {
             std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
-            std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
+            std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }), m_speed(speed) {}
+
+    int GetHP() const override { return 30; }
+    int GetAC() const override { return 10; }
+    int GetSpeed() const override { return m_speed; }
+private:
+    int m_speed;
 };
 
 TEST(DashActionTest, DashMovesTowardsTargetUpToSpeed) {

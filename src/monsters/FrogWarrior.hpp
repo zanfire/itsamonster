@@ -14,7 +14,7 @@ struct FrogWarrior : public Monster {
     };
 
     FrogWarrior(CombatSystem& system)
-    : Monster(system, "Frog Warrior", 11, 15, 30, {
+    : Monster(system, "Frog Warrior", {
             std::make_pair(12, 1),
             std::make_pair(14, 2),
             std::make_pair(13, 1),
@@ -30,6 +30,10 @@ struct FrogWarrior : public Monster {
     AttackMeleeAction* GetMeleeAttack() override {
         return &m_attack;
     }
+
+    int GetHP() const override { return 11; }
+    int GetAC() const override { return 15; }
+    int GetSpeed() const override { return 30; }
 
 private:
     Melee m_attack;

@@ -21,7 +21,7 @@ namespace itsamonster {
         };
 
         SharkyWarrior(CombatSystem& system)
-            : Monster(system, "Sharky Warrior", 22, 12, 30, {
+            : Monster(system, "Sharky Warrior", {
                     std::make_pair(13, 1),
                     std::make_pair(10, 0),
                     std::make_pair(11, 0),
@@ -44,6 +44,10 @@ namespace itsamonster {
             // Sharky Warriors are resistant to cold damage
             return type == DamageType::Cold;
         }
+
+        int GetHP() const override { return 22; }
+        int GetAC() const override { return 12; }
+        int GetSpeed() const override { return 30; }
 
     private:
         Melee m_attack;

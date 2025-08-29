@@ -52,7 +52,8 @@ set(ITSAMONSTER_LIB_SOURCES
     src/monsters/MermaidWarrior.hpp
     src/monsters/SharkyWarrior.hpp
     src/monsters/ReefShark.hpp
-    src/monsters/Merrow.hpp
+    src/monsters/WaterElemental.hpp
+    src/monsters/FiendBaron.hpp
 )
 
 add_library(itsamonster_lib ${ITSAMONSTER_LIB_SOURCES})

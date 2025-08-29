@@ -6,6 +6,7 @@
 #include "core/CombatSystem.hpp"
 #include "actions/AttackAction.hpp"
 #include "actions/DashAction.hpp"
+#include "actions/RechargeAction.hpp"
 
 using namespace itsamonster;
 
@@ -74,6 +75,16 @@ void AttackBehaviour::Execute(Monster& monster, const std::vector<Monster*>& ene
 
     MonsterPayload monsterPayload;
     monsterPayload.monster = &monster;
+
+    if (auto recharge = monster.GetRechargeAction()) {
+        if (recharge->IsAvailable()) {
+            if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {
+                recharge->Perform(monster, *target);
+            }
+            m_system.NotifyTurnEvent(TurnEvent::AfterAction, &monsterPayload);
+        }
+    }
+
     auto meleeAttack = monster.GetMeleeAttack();
     if (meleeAttack && meleeAttack->IsInRange(monster, *target)) {
         if (m_system.NotifyTurnEvent(TurnEvent::TakeAction, &monsterPayload)) {

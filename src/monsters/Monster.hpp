@@ -30,8 +30,8 @@ struct Strategy; // forward declaration for unique_ptr member
 
 class Monster : public TurnEventListener {
 public:
-    Monster(CombatSystem& system, std::string_view name, int hp, int ac, int speed, std::array<std::pair<int, int>, 6> s)
-        : m_name(std::move(name)), m_hp(hp), m_ac(ac), m_speed(speed), m_stats(std::move(s)), m_system(system) {
+    Monster(CombatSystem& system, std::string_view name, std::array<std::pair<int, int>, 6> s)
+        : m_name(std::move(name)), m_stats(std::move(s)), m_system(system) {
         // Assign a unique, monotonically increasing instance ID starting from 1
         m_id = s_nextId.fetch_add(1, std::memory_order_relaxed) + 1;
     }
@@ -42,15 +42,16 @@ public:
     MonsterInstanceId GetInstanceId() const { return m_id; }
 
     // Movement & spatial
-    virtual int GetSpeed() const { return m_speed; }
+    virtual int GetSpeed() const = 0;
 
     virtual std::string_view GetName() const { return m_name; }
-    virtual int GetHP() const { return m_hp; }
-    virtual int GetAC() const { return m_ac; }
+    virtual int GetHP() const = 0;
+    virtual int GetAC() const = 0;
 
     virtual int GetReach() const { return 5; } // Default reach for melee attacks
 
     virtual struct AttackMeleeAction* GetMeleeAttack() { return nullptr; }
+    virtual struct RechargeAction* GetRechargeAction() { return nullptr; }
     virtual struct AttackRangedAction* GetRangedAttack() { return nullptr; }
     virtual struct DashAction* GetDashAction() { return nullptr; }
 
@@ -81,9 +82,7 @@ private:
 private:
     std::string_view m_name;
     MonsterInstanceId m_id{0};
-    int m_hp{ 0 };
-    int m_ac{ 0 };
-    int m_speed{ 0 }; // feet per round
+    // No base HP/AC/Speed storage: derived monsters must return fixed values in getters
     int m_flySpeed{ 0 }; // feet per round, if applicable
     bool m_hover{ false }; // true if the monster can hover (e.g. flying creatures)
     std::array<std::pair<int, int>, 6> m_stats{};

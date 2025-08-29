@@ -10,9 +10,15 @@ using namespace itsamonster;
 
 struct DummyMonster : public Monster {
     DummyMonster(CombatSystem& system, std::string_view name = "Dummy", int ac = 10)
-        : Monster(system, name, /*hp*/100, /*ac*/ac, /*speed*/30, {
+        : Monster(system, name, {
             std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
-            std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
+            std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }), m_ac(ac) {}
+
+    int GetHP() const override { return 100; }
+    int GetAC() const override { return m_ac; }
+    int GetSpeed() const override { return 30; }
+private:
+    int m_ac;
 };
 
 // Helper to build a basic melee and ranged attack

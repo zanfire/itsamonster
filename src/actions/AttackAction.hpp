@@ -8,8 +8,12 @@ namespace itsamonster {
 
 struct AttackAction : public Action {
     AttackAction(class CombatSystem& system, std::string_view name, int attackBonus, std::vector<std::pair<DamageType, int>> damage, int range, int multiAttackCount)
-        : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damages(std::move(damage)), m_range(range), m_multiAttackCount(multiAttackCount) {}
-    ~AttackAction() override = default;
+        : m_system(system), m_name(name), m_attackBonus(attackBonus), m_damages(std::move(damage)), m_range(range), m_multiAttackCount(multiAttackCount) {
+        m_system.AddListener(this);
+    }
+    ~AttackAction() override {
+        m_system.RemoveListener(this);
+    }
 
     bool IsInRange(const Monster& attacker, const Monster& target) const override;
     virtual Advantage HasAdvantage(const Monster& attacker, const Monster& target) const;

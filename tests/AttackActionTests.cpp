@@ -8,9 +8,13 @@
 using namespace itsamonster;
 
 struct TestMonster : public Monster {
-    TestMonster(CombatSystem& system) : Monster(system, "TestMonster", 50, 10, 30, {
+    TestMonster(CombatSystem& system) : Monster(system, "TestMonster", {
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0),
         std::make_pair(10,0), std::make_pair(10,0), std::make_pair(10,0) }) {}
+
+    int GetHP() const override { return 50; }
+    int GetAC() const override { return 10; }
+    int GetSpeed() const override { return 30; }
 };
 
 TEST(AttackActionTest, HitAndMissControlledByDice) {

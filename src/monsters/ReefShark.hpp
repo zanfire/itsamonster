@@ -21,7 +21,7 @@ namespace itsamonster {
         };
 
         ReefShark(CombatSystem& system)
-            : Monster(system, "Reef Shark", 22, 12, 30, {
+            : Monster(system, "Reef Shark", {
                     std::make_pair(14, 2),
                     std::make_pair(15, 2),
                     std::make_pair(13, 1),
@@ -39,6 +39,10 @@ namespace itsamonster {
         }
 
         bool HasDarkvision() const override { return true; }
+
+        int GetHP() const override { return 22; }
+        int GetAC() const override { return 12; }
+        int GetSpeed() const override { return 30; }
 
     private:
         Melee m_attack;

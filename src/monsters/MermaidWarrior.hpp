@@ -15,10 +15,8 @@ namespace itsamonster {
 
         struct Ranged : public AttackRangedAction {
             Ranged(CombatSystem& system) : AttackRangedAction(system, "Trident", 2, { std::make_pair(DamageType::Piercing, 3), std::make_pair(DamageType::Cold, 2) }, 20, 60) {
-                m_system.AddListener(this);
             }
             ~Ranged() override {
-                m_system.RemoveListener(this);
             }
 
             bool OnTurnEvent(TurnEvent ev, EventPayload* p) {
@@ -33,7 +31,7 @@ namespace itsamonster {
         };
 
         MermaidWarrior(CombatSystem& system)
-            : Monster(system, "Mermaid Warrior", 11, 11, 40, {
+            : Monster(system, "Mermaid Warrior", {
                     std::make_pair(13, 1),
                     std::make_pair(10, 0),
                     std::make_pair(11, 0),
@@ -55,6 +53,11 @@ namespace itsamonster {
         }
 
         virtual bool HasDarkvision() const { return false; }
+
+        // Fixed stats for this monster
+        int GetHP() const override { return 11; }
+        int GetAC() const override { return 11; }
+        int GetSpeed() const override { return 40; }
 
     private:
         Melee m_attack;

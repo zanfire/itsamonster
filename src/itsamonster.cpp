@@ -1,7 +1,8 @@
 
 #include "monsters/MermaidWarrior.hpp"
 #include "monsters/SharkyWarrior.hpp"
-#include "monsters/ReefShark.hpp"
+#include "monsters/WaterElemental.hpp"
+#include "monsters/FiendBaron.hpp"
 
 #include "Match.hpp"
 
@@ -40,10 +41,9 @@ int main(int argc, char **argv) {
     using TeamFrogs = std::array<MermaidWarrior, 2>;
     using TeamFish = std::array<SharkyWarrior, 1>;
     Match match(in_darkness);
-    match.AddMonster("Mermaid", [](CombatSystem& s) { return std::make_unique<MermaidWarrior>(s); }, { 200, 10, 0 });
-    match.AddMonster("Mermaid", [](CombatSystem& s) { return std::make_unique<MermaidWarrior>(s); }, { 180, 30, 0 });
-    match.AddMonster("Sharky", [](CombatSystem& s) { return std::make_unique<SharkyWarrior>(s); }, { 200, 90, 0 });
-
+    match.AddMonster("Fiend Baron", [](CombatSystem& s) { return std::make_unique<FiendBaron>(s); }, { 65, 50, 0 });
+    match.AddMonster("Water Elemental", [](CombatSystem& s) { return std::make_unique<WaterElemental>(s); }, { 40, 35, 0 });
+    
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

@@ -14,7 +14,7 @@ namespace itsamonster {
         };
 
         FishWarrior(CombatSystem& system)
-            : Monster(system, "Fish Warrior", 18, 13, 30, {
+            : Monster(system, "Fish Warrior", {
                     std::make_pair(13, 1),
                     std::make_pair(10, 0),
                     std::make_pair(11, 0),
@@ -32,6 +32,10 @@ namespace itsamonster {
         }
 
         virtual bool HasDarkvision() const { return true; }
+
+    int GetHP() const override { return 18; }
+    int GetAC() const override { return 13; }
+    int GetSpeed() const override { return 30; }
 
     private:
         Melee m_attack;

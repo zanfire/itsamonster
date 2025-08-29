@@ -14,7 +14,7 @@ struct AwakenedPlants : public Monster {
     };
 
     AwakenedPlants(CombatSystem& system)
-    : Monster(system, "Awakened Plants", 10, 9, 20, {
+    : Monster(system, "Awakened Plants", {
             std::make_pair(3, -4),
             std::make_pair(8, -1),
             std::make_pair(11, 0),
@@ -35,6 +35,10 @@ struct AwakenedPlants : public Monster {
         if (damageType == DamageType::Piercing) return true;
         return Monster::IsResistant(damageType);
     }
+
+    int GetHP() const override { return 10; }
+    int GetAC() const override { return 9; }
+    int GetSpeed() const override { return 20; }
 
 private:
     Rake m_rake;

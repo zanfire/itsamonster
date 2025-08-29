@@ -34,7 +34,7 @@ struct YoungGoldDragon : public Monster {
     BreathWeapon m_breath;
 
     explicit YoungGoldDragon(CombatSystem& system)
-    : Monster(system, "Young Gold Dragon", 178, 18, 80, {
+    : Monster(system, "Young Gold Dragon", {
             std::make_pair(23, 6),
             std::make_pair(14, 6),
             std::make_pair(21, 5),
@@ -54,6 +54,10 @@ struct YoungGoldDragon : public Monster {
         Monster::StartTurn(round);
         m_breath.TryRecharge();
     }
+
+    int GetHP() const override { return 178; }
+    int GetAC() const override { return 18; }
+    int GetSpeed() const override { return 80; }
 };
 
 } // namespace itsamonster

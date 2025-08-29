@@ -92,8 +92,7 @@ bool TurnStatusTracker::OnTurnEvent(TurnEvent ev, EventPayload* payload) {
             it->second.actions.movement += distanceMoved;
         }
     }
-    else if (ev == TurnEvent::OnApplyCondition)
-    {
+    else if (ev == TurnEvent::OnApplyCondition) {
         return TrackCondition(dynamic_cast<ConditionEventPayload*>(payload));
     }
     else if (ev == TurnEvent::OnDamageApplied) {
@@ -147,7 +146,7 @@ bool TurnStatusTracker::TrackCondition(ConditionEventPayload* payload) {
     auto monster = payload->monster;
     if (auto status = GetTurnStatus(monster->GetInstanceId())) {
         if (payload->phase == Phase::After) {
-            status->conditions[static_cast<size_t>(payload->condition)] = payload->duration;
+            status->conditions[static_cast<size_t>(payload->condition)] = m_system.GetCurrentRound() + payload->duration;
         }
     }
     return true;
