@@ -54,10 +54,10 @@ namespace itsamonster {
         protected:
             void Execute(Monster& attacker, Monster& target) override {
                 if (!IsAvailable()) {
-                    LOG(attacker.GetName() << " whelm not recharged.");
+                    LOGGER.LogMonster(attacker, "whelm not recharged.");
                     return;
                 }
-                LOG(attacker.GetName() << " uses Whelm! (Recharge 4-6)");
+                LOGGER.LogMonster(attacker, "uses Whelm! (Recharge 4-6)");
                 if (target.SavingThrow(Ability::Dexterity, 15)) {
                     RaiseDamage(attacker, target, { std::make_pair(DamageType::Fire, 22 / 2) });
                 }

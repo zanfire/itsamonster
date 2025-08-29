@@ -20,7 +20,7 @@ bool Monster::IsCondition(Condition condition) const {
 }
 void Monster::SetCondition(Condition condition, int duration) {
     if (duration <= 0) {
-        LOG(m_name << " tried to set condition " << to_string(condition) << " with non-positive duration, ignoring.");
+        LOGGER.LogMonster(*this, "tried to set condition %s with non-positive duration, ignoring.", to_string(condition).data());
         return; // Invalid duration
     }
     ConditionEventPayload payload{};
@@ -115,8 +115,7 @@ bool Monster::OnApplyCondition(ConditionEventPayload* payload) {
 
 bool Monster::OnDamageApplied(DamagePayload* payload) {
     if (payload->monster != this) return true; // Not our damage
-    if (payload->phase != DamagePhase::AfterApply) {
-        LOGGER.LogMonster(*this, "received damage before application phase, skipping immunity/resistance checks.");
+    if (payload->phase != DamagePhase::AfterApply) {;
         return true; // Only handle after-apply phase
     }
     for (auto& [type, amount] : payload->damages) {

@@ -48,9 +48,9 @@ void Match::Go(int runs, int seed) {
                 std::vector<std::unique_ptr<Monster>> team2;
                 for (const auto& [teamName, teamInfo] : m_teams) {
                     bool isTeam1 = (teamName == GetMonster1Name());
-                    for (const auto& [factory, pos] : teamInfo.members) {
-                        auto monster = factory(system);
-                        system.AddMonster(monster.get(), 20 - init++, pos, isTeam1 ? 1 : 2);
+                    for (const auto& member : teamInfo.members) {
+                        auto monster = member.factory(system);
+                        system.AddMonster(monster.get(), member.initiative, member.pos, isTeam1 ? 1 : 2);
                         if (isTeam1) {
                             team1.push_back(std::move(monster));
                         } else {
@@ -70,8 +70,8 @@ void Match::Go(int runs, int seed) {
     std::cout << "Elapsed time: " << elapsed.count() << " ms\n";
 }
 
-void Match::AddMonster(std::string_view team, MonsterFactoryFunc factory, Position pos) {
-    m_teams[std::string(team)].members.emplace_back(factory, pos);
+void Match::AddMonster(std::string_view team, MonsterFactoryFunc factory, Position pos, int initiative) {
+    m_teams[std::string(team)].members.emplace_back(MemberInfo{ factory, pos, initiative });
     if (m_team1.empty()) m_team1 = team;
     else if (m_team2.empty() && m_team1 != team) m_team2 = team;
 }

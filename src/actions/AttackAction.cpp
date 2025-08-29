@@ -35,7 +35,6 @@ namespace itsamonster {
         attackRollPayload.ac = target.GetAC();
         attackRollPayload.phase = Phase::Before;
         if (!m_system.NotifyTurnEvent(TurnEvent::AttackRoll, &attackRollPayload)) {
-            LOG("Attack roll cancelled by listener.");
             return; // Cancelled by listener
         }
 
@@ -47,12 +46,11 @@ namespace itsamonster {
         attackRollPayload.attackRoll = attackResult;
         attackRollPayload.phase = Phase::After;
         if (!m_system.NotifyTurnEvent(TurnEvent::AttackRoll, &attackRollPayload)) {
-            LOG("Attack roll cancelled by listener.");
             return; // Cancelled by listener
         }
 
         bool hit = !nat1 && (nat20 || attackRollPayload.attackRoll >= attackRollPayload.ac);
-        LOG("Executing action: " << m_name << " roll=" << d20 << (nat20 ? "(nat20)" : "") << (nat1 ? "(nat1)" : "") << " total=" << attackResult << " vs AC " << target.GetAC() << " " << to_string(attackRollPayload.advantage) << " " << (hit ? "Hit!" : "Miss!"));
+        LOGGER.LogMonster(attacker, "Executing action: %s roll=%d%s%s total=%d vs AC %d %s %s", m_name.data(), d20, (nat20 ? "(nat20)" : ""), (nat1 ? "(nat1)" : ""), attackResult, target.GetAC(), to_string(attackRollPayload.advantage).data(), (hit ? "Hit!" : "Miss!"));
         if (hit) {
             if (m_system.NotifyTurnEvent(TurnEvent::OnHit, &attackRollPayload)) {
                 DamagePayload damagePayload{};
@@ -64,13 +62,13 @@ namespace itsamonster {
                     m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &damagePayload);
                 }
                 else {
-                    LOG("Hit cancelled by OnDamageApplied listener.");
+                    LOGGER.LogMonster(attacker, "Hit cancelled by OnDamageApplied listener.");
                     return; // Cancelled by listener
                 }
             }
             else {
                 // If any listener returns false, we cancel the hit
-                LOG("Hit cancelled by listener.");
+                LOGGER.LogMonster(attacker, "Hit cancelled by listener.");
                 return;
             }
         }
@@ -95,59 +93,59 @@ namespace itsamonster {
     Advantage AttackAction::HasAdvantage(const Monster& attacker, const Monster& target) const {
         Advantage adv = Advantage::Normal;
         if (attacker.IsCondition(Condition::Blinded)) {
-            LOG(attacker.GetName() << " is blinded, disadvantage applied.");
+            LOGGER.LogMonster(attacker, "is blinded, disadvantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Disadvantage);
         }
         if (target.IsCondition(Condition::Blinded)) {
-            LOG(target.GetName() << " is blinded, advantage applied.");
+            LOGGER.LogMonster(target, "is blinded, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         if (attacker.IsCondition(Condition::Invisible)) {
-            LOG(attacker.GetName() << " is invisible, disadvantage applied.");
+            LOGGER.LogMonster(attacker, "is invisible, disadvantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Disadvantage);
         }
         if (target.IsCondition(Condition::Invisible)) {
-            LOG(target.GetName() << " is invisible, disadvantage applied.");
+            LOGGER.LogMonster(target, "is invisible, disadvantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Disadvantage);
         }
         if (target.IsCondition(Condition::Paralyzed)) {
-            LOG(target.GetName() << " is paralyzed, advantage applied.");
+            LOGGER.LogMonster(target, "is paralyzed, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         if (target.IsCondition(Condition::Petrified)) {
-            LOG(target.GetName() << " is petrified, advantage applied.");
+            LOGGER.LogMonster(target, "is petrified, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         if (attacker.IsCondition(Condition::Poisoned)) {
-            LOG(attacker.GetName() << " is poisoned, disadvantage applied.");
+            LOGGER.LogMonster(attacker, "is poisoned, disadvantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Disadvantage);
         }
         if (target.IsCondition(Condition::Prone)) {
             auto battlefield = m_system.GetBattlefield();
             double distance = battlefield.GetDistance(attacker.GetInstanceId(), target.GetInstanceId());
             if (distance <= 5.0) {
-                LOG(target.GetName() << " is prone and within 5.0 units, advantage applied.");
+                LOGGER.LogMonster(target, "is prone and within 5.0 units, advantage applied.");
                 adv = ResolveAdvantage(adv, Advantage::Advantage);
             }
             else {
-                LOG(target.GetName() << " is prone and beyond 5.0 units, disadvantage applied.");
+                LOGGER.LogMonster(target, "is prone and beyond 5.0 units, disadvantage applied.");
                 adv = ResolveAdvantage(adv, Advantage::Disadvantage);
             }
         }
         if (attacker.IsCondition(Condition::Restrained)) {
-            LOG(attacker.GetName() << " is restrained, disadvantage applied.");
+            LOGGER.LogMonster(attacker, "is restrained, disadvantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Disadvantage);
         }
         if (target.IsCondition(Condition::Restrained)) {
-            LOG(target.GetName() << " is restrained, advantage applied.");
+            LOGGER.LogMonster(target, "is restrained, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         if (target.IsCondition(Condition::Stunned)) {
-            LOG(target.GetName() << " is stunned, advantage applied.");
+            LOGGER.LogMonster(target, "is stunned, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         if (target.IsCondition(Condition::Unconscious)) {
-            LOG(target.GetName() << " is unconscious, advantage applied.");
+            LOGGER.LogMonster(target, "is unconscious, advantage applied.");
             adv = ResolveAdvantage(adv, Advantage::Advantage);
         }
         return adv;

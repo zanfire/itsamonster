@@ -13,10 +13,11 @@ namespace itsamonster {
             ~Melee() override = default;
 
             Advantage HasAdvantage(const Monster& attacker, const Monster& target) const override {
+                auto adv = AttackAction::HasAdvantage(attacker, target);
                 if (m_system.GetTurnStatusTracker().GetTurnStatus(target.GetInstanceId())->damageTaken > 0) {
-                    return Advantage::Advantage; // Sharky Warriors have advantage if target has taken damage
+                    return ResolveAdvantage(adv, Advantage::Advantage); // Sharky Warriors have advantage if target has taken damage
                 }
-                return Advantage::Normal; // Otherwise normal
+                return ResolveAdvantage(adv, Advantage::Normal); // Otherwise normal
             }
         };
 

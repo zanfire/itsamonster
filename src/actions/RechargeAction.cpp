@@ -18,7 +18,7 @@ void RechargeAction::TryRecharge() {
     int roll = GetDice().Roll(6);
     if (roll >= m_rechargeMin) {
         m_available = true;
-        LOG(m_name << " recharges on a " << roll << " (needed " << m_rechargeMin << "+)");
+        LOGGER.LogMonster(*m_self, "recharges on a %d (needed %d+)", roll, m_rechargeMin);
     }
 }
 
@@ -38,7 +38,7 @@ void RechargeAction::RaiseDamage(Monster& attacker, Monster& target, std::vector
         m_system.NotifyTurnEvent(TurnEvent::OnDamageApplied, &damagePayload);
     }
     else {
-        LOG("Hit cancelled by OnDamageApplied listener.");
+        LOGGER.LogMonster(attacker, "Hit cancelled by OnDamageApplied listener.");
         return; // Cancelled by listener
     }
 }

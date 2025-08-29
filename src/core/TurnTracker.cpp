@@ -124,7 +124,7 @@ void TurnStatusTracker::AddMonster(MonsterEnterPayload* payload) {
     std::sort(m_turnOrder.begin(), m_turnOrder.end(),
         [&](MonsterPtr a, MonsterPtr b) { return m_turnTrackers[a->GetInstanceId()].initiative > m_turnTrackers[b->GetInstanceId()].initiative; });
 
-    LOG("New monster " << payload->monster->GetName() << " tracked");
+    LOGGER.LogMonster(*payload->monster, "New monster tracked (initiative %d, spawn position %d %d %d faction %d)", payload->initiative, payload->spawnPos.x, payload->spawnPos.y, payload->spawnPos.z, payload->faction);
 }
 
 
@@ -166,7 +166,7 @@ bool TurnStatusTracker::TrackEndTurn(MonsterPayload* payload) {
         int condition = 0;
         for (auto& deadline : status->conditions) {
             if (deadline <= m_system.GetCurrentRound() && deadline != 0) {
-                LOG(monster->GetName() << " condition " << to_string(static_cast<Condition>(condition)) << " has ended.");
+                LOGGER.LogMonster(*monster, "condition %s has ended.", to_string(static_cast<Condition>(condition)).data());
                 deadline = 0; // Remove expired condition
             }
             ++condition;
@@ -194,13 +194,13 @@ bool TurnStatusTracker::TrackDamage(DamagePayload* payload) {
             });
         int before = monster->GetHP() - status->damageTaken;
         auto after = before - amount;
-        LOG(monster->GetName() << " takes " << amount << " damage (" << before << " -> " << after << ") " << damageTypesStr);
+        LOGGER.LogMonster(*monster, "takes %d damage (%d -> %d) %s", amount, before, after, damageTypesStr.c_str());
         status->damageTaken += amount;
 
         if (status->damageTaken >= monster->GetHP()) {
             m_system.NotifyTurnEvent(TurnEvent::MonsterDie, payload);
-            // If the monster has taken enough damage to die, we can remove it fro
-            LOG(monster->GetName() << " has died.");
+            // If the monster has taken enough damage to die, we can remove it from the battlefield
+            LOGGER.LogMonster(*monster, "has died.");
         }
     }
     return true;

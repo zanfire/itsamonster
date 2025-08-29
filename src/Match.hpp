@@ -13,8 +13,14 @@ namespace itsamonster {
 using MonsterFactoryFunc = std::function<std::unique_ptr<Monster>(CombatSystem&)>;
 
 struct Match {
+    struct MemberInfo {
+        MonsterFactoryFunc factory;
+        Position pos;
+        int initiative;
+    };
+
     struct TeamInfo {
-        std::vector< std::pair<MonsterFactoryFunc, Position>> members;
+        std::vector<MemberInfo> members;
         int win{ 0 };
     };
 
@@ -36,7 +42,7 @@ struct Match {
 
     double GetAverageRounds(int total_simulations) const;
     void Go(int runs, int seed);
-    void AddMonster(std::string_view team, MonsterFactoryFunc factory, Position pos);
+    void AddMonster(std::string_view team, MonsterFactoryFunc factory, Position pos, int initiative);
 
 private:
     int Fight(CombatSystem& system, const std::vector<std::unique_ptr<Monster>>& team1,

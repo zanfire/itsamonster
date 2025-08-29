@@ -41,9 +41,9 @@ int main(int argc, char **argv) {
     using TeamFrogs = std::array<MermaidWarrior, 2>;
     using TeamFish = std::array<SharkyWarrior, 1>;
     Match match(in_darkness);
-    match.AddMonster("Fiend Baron", [](CombatSystem& s) { return std::make_unique<FiendBaron>(s); }, { 65, 50, 0 });
-    match.AddMonster("Water Elemental", [](CombatSystem& s) { return std::make_unique<WaterElemental>(s); }, { 40, 35, 0 });
-    
+    match.AddMonster("Fiend Baron", [](CombatSystem& s) { return std::make_unique<FiendBaron>(s); }, { 65, 50, 0 }, 10);
+    match.AddMonster("Water Elemental", [](CombatSystem& s) { return std::make_unique<WaterElemental>(s); }, { 40, 35, 0 }, 20);
+
     match.Go(total_simulations, seed);
 
     std::cout << std::fixed << std::setprecision(2);

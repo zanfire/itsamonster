@@ -54,7 +54,7 @@ void MoveCloseCombatBehaviour::Execute(Monster& monster, const std::vector<Monst
     auto distance = attackerPos->DistanceTo(*targetPosOpt);
 
     if (distance <= m_closeDistance) {
-        LOG("Monster " << monster.GetName() << " is already within close distance of target "  << target->GetName());
+        LOGGER.LogMonster(monster, "is already within close distance of target %s", target->GetName().data());
         return; // Already within close distance
     }
 

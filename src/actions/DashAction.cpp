@@ -10,7 +10,7 @@ using namespace itsamonster;
 
 void DashAction::Execute(Monster& attacker, Monster& target) {
     if (attacker.IsCondition(Condition::Incapacitated)) {
-        LOG(attacker.GetName() << " is incapacitated and cannot Dash!");
+        LOGGER.LogMonster(attacker, "is incapacitated and cannot Dash!");
         return;
     }
 
@@ -18,7 +18,7 @@ void DashAction::Execute(Monster& attacker, Monster& target) {
     MonsterPayload mp{};
     mp.monster = &attacker;
     if (!m_system.NotifyTurnEvent(TurnEvent::TakeAction, &mp)) {
-        LOG("Dash action cancelled: action already used or blocked.");
+        LOGGER.LogMonster(attacker, "Dash action cancelled: action already used or blocked.");
         return;
     }
 
@@ -26,7 +26,7 @@ void DashAction::Execute(Monster& attacker, Monster& target) {
     auto& tracker = m_system.GetTurnStatusTracker();
     auto status = tracker.GetTurnStatus(attacker.GetInstanceId());
     if (!status) {
-        LOG_ERROR("Dash failed: attacker not tracked in TurnStatusTracker.");
+        LOGGER.Debug("Dash failed: attacker not tracked in TurnStatusTracker.");
         return;
     }
 
@@ -34,7 +34,7 @@ void DashAction::Execute(Monster& attacker, Monster& target) {
     auto spOpt = battlefield.GetPosition(attacker.GetInstanceId());
     auto tpOpt = battlefield.GetPosition(target.GetInstanceId());
     if (!spOpt || !tpOpt) {
-        LOG_ERROR("Dash failed: missing positions.");
+        LOGGER.Debug("Dash failed: missing positions.");
         return;
     }
 
@@ -42,5 +42,5 @@ void DashAction::Execute(Monster& attacker, Monster& target) {
     // Perform the dash movement now, independent of prior movement; action economy already consumed.
     // Use size-aware overload to stop at correct edge-to-edge distance
     double moved = battlefield.MoveTowardsInSteps(attacker, target, remaining, m_stopDistance, 5.0);
-    LOG(attacker.GetName() << " dashes " << moved << " feet towards " << target.GetName());
+    LOGGER.LogMonster(attacker, " dashes %d feet towards %s", moved, target.GetName().data());
 }
