@@ -32,20 +32,25 @@ void Monster::SetCondition(Condition condition, int duration) {
         payload.phase = Phase::After;
         // Only apply condition if the Before phase was accepted
         m_system.NotifyTurnEvent(TurnEvent::OnApplyCondition, &payload);
-        LOG(m_name << " applied condition " << to_string(condition) << " for " << duration << " rounds.");
+        LOGGER.LogMonster(*this, "applied condition %s for %d rounds.", to_string(condition).data(), duration);
     } else {
-        LOG(m_name << " failed to apply condition " << to_string(condition) << ", cancelled by listener.");
+        LOGGER.LogMonster(*this, "failed to apply condition %s, cancelled by listener.", to_string(condition).data());
         return; // Cancelled by listener
     }
 }
 
 bool Monster::SavingThrow(Ability stat, int DC) {
-    int result = GetDice().Roll(20) + m_stats[int(stat)].second;
+    Advantage adv = Advantage::Normal;
+    if (stat == Ability::Dexterity && IsCondition(Condition::Restrained)) {
+        LOGGER.LogMonster(*this, "is restrained, saving throw with disadvantage.");
+        adv = Advantage::Disadvantage;
+    }
+    int result = GetDice().D20(adv) + m_stats[int(stat)].second;
     if (result >= DC) {
-        LOG(m_name << " succeeds the saving throw against " << to_string(stat));
+        LOGGER.LogMonster(*this, "succeeds the saving throw against %s", to_string(stat).data());
         return true;
     } else {
-        LOG(m_name << " fails the saving throw against " << to_string(stat));
+        LOGGER.LogMonster(*this, "fails the saving throw against %s", to_string(stat).data());
     }
     return false;
 }
